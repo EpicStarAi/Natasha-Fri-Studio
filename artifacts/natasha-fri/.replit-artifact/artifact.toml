@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "НАТАША ФРИ RUS"
+description = "Premium commercial landing page for the private media product 'НАТАША ФРИ RUS 🍟'. Features an infinite 2D canvas with pan/zoom, draggable and resizable Markdown windows, dark editorial aesthetic with red-orange accents, subscription tiers, demo content, and a mobile card-stack layout."
+version = "1.0.0"
+id = "artifacts/natasha-fri"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 21246
+
+[services.development]
+run = "pnpm --filter @workspace/natasha-fri run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/natasha-fri", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/natasha-fri/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "21246"
+BASE_PATH = "/"

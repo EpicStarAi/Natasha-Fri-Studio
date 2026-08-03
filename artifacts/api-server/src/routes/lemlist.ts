@@ -1,5 +1,6 @@
 import { Router, type IRouter } from "express";
 import crypto from "node:crypto";
+import rateLimit from "express-rate-limit";
 import {
   buildAuthorizeUrl,
   exchangeCodeForToken,
@@ -12,6 +13,15 @@ import { db, lemlistTokensTable } from "@workspace/db";
 import { desc } from "drizzle-orm";
 
 const router: IRouter = Router();
+
+// Rate limiter: max 10 OAuth authorize attempts per IP per 15 minutes.
+const oauthRateLimit = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many authorization attempts, please try again later." },
+});
 
 // In-memory store for pending OAuth state tokens (CSRF protection).
 // Each entry expires after 10 minutes.
@@ -36,7 +46,7 @@ function consumeState(state: string): boolean {
  * GET /api/lemlist/oauth/authorize
  * Redirects the browser to Lemlist's OAuth consent screen.
  */
-router.get("/lemlist/oauth/authorize", (_req, res) => {
+router.get("/lemlist/oauth/authorize", oauthRateLimit, (_req, res) => {
   const state = generateState();
   const url = buildAuthorizeUrl(state);
   res.redirect(302, url);

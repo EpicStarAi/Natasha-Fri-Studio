@@ -33,3 +33,56 @@ export const ChatResponse = zod.object({
 })
 
 
+/**
+ * Redirects the browser to Lemlist's OAuth consent screen
+ * @summary Start Lemlist OAuth flow
+ */
+export const LemlistOAuthAuthorizeResponse = zod.void()
+
+
+/**
+ * Handles the OAuth callback from Lemlist; exchanges code for a token
+ * @summary Lemlist OAuth callback
+ */
+export const LemlistOAuthCallbackQueryParams = zod.object({
+  "code": zod.coerce.string().optional(),
+  "state": zod.coerce.string().optional(),
+  "error": zod.coerce.string().optional(),
+  "error_description": zod.coerce.string().optional()
+})
+
+export const LemlistOAuthCallbackResponse = zod.void()
+
+
+/**
+ * Returns whether a valid Lemlist OAuth token is stored
+ * @summary Lemlist connection status
+ */
+export const LemlistOAuthStatusResponse = zod.object({
+  "connected": zod.boolean(),
+  "expired": zod.boolean().optional(),
+  "scope": zod.string().nullish(),
+  "connectedAt": zod.coerce.date().nullish()
+})
+
+
+/**
+ * Deletes the stored Lemlist OAuth token
+ * @summary Disconnect Lemlist
+ */
+export const LemlistOAuthDisconnectResponse = zod.object({
+  "disconnected": zod.boolean()
+})
+
+
+/**
+ * Proxy — returns all campaigns from the Lemlist API using the stored token
+ * @summary List Lemlist campaigns
+ */
+export const LemlistGetCampaignsResponseItem = zod.object({
+  "_id": zod.string(),
+  "name": zod.string()
+})
+export const LemlistGetCampaignsResponse = zod.array(LemlistGetCampaignsResponseItem)
+
+

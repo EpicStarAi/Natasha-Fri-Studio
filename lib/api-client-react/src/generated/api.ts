@@ -22,7 +22,12 @@ import type {
 import type {
   ChatRequest,
   ChatResponse,
-  HealthStatus
+  ErrorResponse,
+  HealthStatus,
+  LemlistCampaign,
+  LemlistDisconnected,
+  LemlistOAuthCallbackParams,
+  LemlistStatus
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -201,4 +206,395 @@ export const useChat = <TError = ErrorType<unknown>,
       > => {
       return useMutation(getChatMutationOptions(options));
     }
+
+export const getLemlistOAuthAuthorizeUrl = () => {
+
+
+
+
+  return `/api/lemlist/oauth/authorize`
+}
+
+/**
+ * Redirects the browser to Lemlist's OAuth consent screen
+ * @summary Start Lemlist OAuth flow
+ */
+export const lemlistOAuthAuthorize = async ( options?: Parameters<typeof customFetch>[1]): Promise<unknown> => {
+
+  return customFetch<unknown>(getLemlistOAuthAuthorizeUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getLemlistOAuthAuthorizeQueryKey = () => {
+    return [
+    `/api/lemlist/oauth/authorize`
+    ] as const;
+    }
+
+
+export const getLemlistOAuthAuthorizeQueryOptions = <TData = Awaited<ReturnType<typeof lemlistOAuthAuthorize>>, TError = ErrorType<void>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof lemlistOAuthAuthorize>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getLemlistOAuthAuthorizeQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof lemlistOAuthAuthorize>>> = ({ signal }) => lemlistOAuthAuthorize({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof lemlistOAuthAuthorize>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type LemlistOAuthAuthorizeQueryResult = NonNullable<Awaited<ReturnType<typeof lemlistOAuthAuthorize>>>
+export type LemlistOAuthAuthorizeQueryError = ErrorType<void>
+
+
+/**
+ * @summary Start Lemlist OAuth flow
+ */
+
+export function useLemlistOAuthAuthorize<TData = Awaited<ReturnType<typeof lemlistOAuthAuthorize>>, TError = ErrorType<void>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof lemlistOAuthAuthorize>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getLemlistOAuthAuthorizeQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getLemlistOAuthCallbackUrl = (params?: LemlistOAuthCallbackParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/lemlist/oauth/callback?${stringifiedParams}` : `/api/lemlist/oauth/callback`
+}
+
+/**
+ * Handles the OAuth callback from Lemlist; exchanges code for a token
+ * @summary Lemlist OAuth callback
+ */
+export const lemlistOAuthCallback = async (params?: LemlistOAuthCallbackParams, options?: Parameters<typeof customFetch>[1]): Promise<unknown> => {
+
+  return customFetch<unknown>(getLemlistOAuthCallbackUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getLemlistOAuthCallbackQueryKey = (params?: LemlistOAuthCallbackParams,) => {
+    return [
+    `/api/lemlist/oauth/callback`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getLemlistOAuthCallbackQueryOptions = <TData = Awaited<ReturnType<typeof lemlistOAuthCallback>>, TError = ErrorType<void>>(params?: LemlistOAuthCallbackParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof lemlistOAuthCallback>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getLemlistOAuthCallbackQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof lemlistOAuthCallback>>> = ({ signal }) => lemlistOAuthCallback(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof lemlistOAuthCallback>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type LemlistOAuthCallbackQueryResult = NonNullable<Awaited<ReturnType<typeof lemlistOAuthCallback>>>
+export type LemlistOAuthCallbackQueryError = ErrorType<void>
+
+
+/**
+ * @summary Lemlist OAuth callback
+ */
+
+export function useLemlistOAuthCallback<TData = Awaited<ReturnType<typeof lemlistOAuthCallback>>, TError = ErrorType<void>>(
+ params?: LemlistOAuthCallbackParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof lemlistOAuthCallback>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getLemlistOAuthCallbackQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getLemlistOAuthStatusUrl = () => {
+
+
+
+
+  return `/api/lemlist/oauth/status`
+}
+
+/**
+ * Returns whether a valid Lemlist OAuth token is stored
+ * @summary Lemlist connection status
+ */
+export const lemlistOAuthStatus = async ( options?: Parameters<typeof customFetch>[1]): Promise<LemlistStatus> => {
+
+  return customFetch<LemlistStatus>(getLemlistOAuthStatusUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getLemlistOAuthStatusQueryKey = () => {
+    return [
+    `/api/lemlist/oauth/status`
+    ] as const;
+    }
+
+
+export const getLemlistOAuthStatusQueryOptions = <TData = Awaited<ReturnType<typeof lemlistOAuthStatus>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof lemlistOAuthStatus>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getLemlistOAuthStatusQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof lemlistOAuthStatus>>> = ({ signal }) => lemlistOAuthStatus({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof lemlistOAuthStatus>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type LemlistOAuthStatusQueryResult = NonNullable<Awaited<ReturnType<typeof lemlistOAuthStatus>>>
+export type LemlistOAuthStatusQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Lemlist connection status
+ */
+
+export function useLemlistOAuthStatus<TData = Awaited<ReturnType<typeof lemlistOAuthStatus>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof lemlistOAuthStatus>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getLemlistOAuthStatusQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getLemlistOAuthDisconnectUrl = () => {
+
+
+
+
+  return `/api/lemlist/oauth/disconnect`
+}
+
+/**
+ * Deletes the stored Lemlist OAuth token
+ * @summary Disconnect Lemlist
+ */
+export const lemlistOAuthDisconnect = async ( options?: Parameters<typeof customFetch>[1]): Promise<LemlistDisconnected> => {
+
+  return customFetch<LemlistDisconnected>(getLemlistOAuthDisconnectUrl(),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getLemlistOAuthDisconnectMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof lemlistOAuthDisconnect>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof lemlistOAuthDisconnect>>, TError,void, TContext> => {
+
+const mutationKey = ['lemlistOAuthDisconnect'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof lemlistOAuthDisconnect>>, void> = () => {
+
+
+          return  lemlistOAuthDisconnect(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type LemlistOAuthDisconnectMutationResult = NonNullable<Awaited<ReturnType<typeof lemlistOAuthDisconnect>>>
+
+    export type LemlistOAuthDisconnectMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Disconnect Lemlist
+ */
+export const useLemlistOAuthDisconnect = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof lemlistOAuthDisconnect>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof lemlistOAuthDisconnect>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getLemlistOAuthDisconnectMutationOptions(options));
+    }
+
+export const getLemlistGetCampaignsUrl = () => {
+
+
+
+
+  return `/api/lemlist/campaigns`
+}
+
+/**
+ * Proxy — returns all campaigns from the Lemlist API using the stored token
+ * @summary List Lemlist campaigns
+ */
+export const lemlistGetCampaigns = async ( options?: Parameters<typeof customFetch>[1]): Promise<LemlistCampaign[]> => {
+
+  return customFetch<LemlistCampaign[]>(getLemlistGetCampaignsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getLemlistGetCampaignsQueryKey = () => {
+    return [
+    `/api/lemlist/campaigns`
+    ] as const;
+    }
+
+
+export const getLemlistGetCampaignsQueryOptions = <TData = Awaited<ReturnType<typeof lemlistGetCampaigns>>, TError = ErrorType<ErrorResponse>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof lemlistGetCampaigns>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getLemlistGetCampaignsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof lemlistGetCampaigns>>> = ({ signal }) => lemlistGetCampaigns({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof lemlistGetCampaigns>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type LemlistGetCampaignsQueryResult = NonNullable<Awaited<ReturnType<typeof lemlistGetCampaigns>>>
+export type LemlistGetCampaignsQueryError = ErrorType<ErrorResponse>
+
+
+/**
+ * @summary List Lemlist campaigns
+ */
+
+export function useLemlistGetCampaigns<TData = Awaited<ReturnType<typeof lemlistGetCampaigns>>, TError = ErrorType<ErrorResponse>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof lemlistGetCampaigns>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getLemlistGetCampaignsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
 

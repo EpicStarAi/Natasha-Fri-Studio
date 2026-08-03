@@ -30,3 +30,30 @@ export interface ChatResponse {
   message: string;
 }
 
+export interface LemlistStatus {
+  connected: boolean;
+  expired?: boolean;
+  scope?: string | null;
+  connectedAt?: string | null;
+}
+
+export interface LemlistDisconnected {
+  disconnected: boolean;
+}
+
+export interface LemlistCampaign {
+  _id: string;
+  name: string;
+}
+
+export interface ErrorResponse {
+  error: string;
+}
+
+export type LemlistOAuthCallbackParams = {
+code?: string;
+state?: string;
+error?: string;
+error_description?: string;
+};
+

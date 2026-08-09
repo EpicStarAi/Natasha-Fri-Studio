@@ -1,0 +1,106 @@
+services:
+  # PostgreSQL - БД для n8n
+  postgres:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-natasha_epic_2024}
+      POSTGRES_DB: n8n
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5434:5432"          # 5432/5433 заняты другими проектами на этой машине
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # n8n - Автоматизация (образ с ffmpeg для склейки видео)
+  n8n:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    image: natasha-n8n:latest
+    restart: unless-stopped
+    ports:
+      - "5680:5678"          # 5678/5679 заняты (ai-evo-n8n, di-n8n) → 5680
+    environment:
+      - DB_TYPE=postgresdb
+      - DB_POSTGRESDB_HOST=postgres
+      - DB_POSTGRESDB_PORT=5432
+      - DB_POSTGRESDB_DATABASE=n8n
+      - DB_POSTGRESDB_USER=postgres
+      - DB_POSTGRESDB_PASSWORD=${DB_PASSWORD:-natasha_epic_2024}
+      - N8N_PROTOCOL=http
+      - N8N_HOST=localhost
+      - N8N_PORT=5678
+      - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY:-natasha_dev_encryption_key}
+      # === Пайплайн: ключи API ===
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4o-mini}
+      - ELEVENLABS_API_KEY=${ELEVENLABS_API_KEY}
+      - ELEVENLABS_VOICE_ID=${ELEVENLABS_VOICE_ID:-21m00Tcm4TlvDq8ikWAM}
+      - ELEVENLABS_MODEL_ID=${ELEVENLABS_MODEL_ID:-eleven_multilingual_v2}
+      - TIKTOK_ACCESS_TOKEN=${TIKTOK_ACCESS_TOKEN}
+      - TIKTOK_PRIVACY_LEVEL=${TIKTOK_PRIVACY_LEVEL:-SELF_ONLY}
+      - INSTAGRAM_BUSINESS_ACCOUNT_ID=${INSTAGRAM_BUSINESS_ACCOUNT_ID}
+      - INSTAGRAM_ACCESS_TOKEN=${INSTAGRAM_ACCESS_TOKEN}
+      - INSTAGRAM_VIDEO_URL=${INSTAGRAM_VIDEO_URL}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
+      - YOUTUBE_PRIVACY=${YOUTUBE_PRIVACY:-private}
+      - NATASHA_BG_IMAGE=${NATASHA_BG_IMAGE:-/home/node/assets/bg.jpg}
+    volumes:
+      - n8n_data:/home/node/.n8n
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      # в официальном образе curl нет — используем wget
+      test: ["CMD-SHELL", "wget -qO- http://localhost:5678/healthz >/dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Redis - кэширование (6379-6381 заняты → 6382)
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6382:6379"
+    volumes:
+      - redis_data:/data
+
+  # Ollama - локальные LLM (11434/11435 заняты → 11436)
+  ollama:
+    image: ollama/ollama
+    restart: unless-stopped
+    ports:
+      - "11436:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    environment:
+      - OLLAMA_HOST=0.0.0.0:11434
+
+  # OpenWebUI - интерфейс для Ollama (3000-3002 заняты → 3003)
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:latest
+    restart: unless-stopped
+    ports:
+      - "3003:8080"
+    environment:
+      - OLLAMA_API_BASE_URL=http://ollama:11434/api
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    depends_on:
+      - ollama
+
+volumes:
+  postgres_data:
+  n8n_data:
+  redis_data:
+  ollama_data:
+
+networks:
+  default:
+    name: epic_star_network

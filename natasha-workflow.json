@@ -1,0 +1,1070 @@
+{
+  "name": "NATASHA | AUTO PUBLISHER",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ]
+      },
+      "id": "00000000-0000-4000-8000-000000000001",
+      "name": "Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        240,
+        320
+      ],
+      "webhookId": "11111111-1111-4111-8111-111111111111",
+      "credentials": {
+        "telegramApi": {
+          "id": "1",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "natasha/publish",
+        "responseMode": "onReceived",
+        "responseData": "allEntries",
+        "options": {}
+      },
+      "id": "00000000-0000-4000-8000-000000000002",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        240,
+        560
+      ],
+      "webhookId": "22222222-2222-4222-8222-222222222222"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "33333333-3333-4333-8333-333333333331",
+              "name": "topic",
+              "value": "={{ $json.message?.text || $json.body?.topic || 'главные новости за сегодня' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "00000000-0000-4000-8000-000000000003",
+      "name": "Prepare",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        500,
+        440
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.OPENAI_API_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ { model: $env.OPENAI_MODEL || 'gpt-4o-mini', messages: [ { role: 'system', content: 'Ты — НАТАША, русский AI-блогер и новостной ведущий. Напиши энергичный сценарий для короткого вертикального видео (15-30 секунд) на тему, которую даст пользователь. Правила: цепляющий хук в первой фразе, разговорный стиль, в конце призыв подписаться. Верни ТОЛЬКО текст сценария без заголовков и форматирования.' }, { role: 'user', content: 'Тема: ' + $json.topic } ], temperature: 0.8 } }}",
+        "options": {}
+      },
+      "id": "00000000-0000-4000-8000-000000000004",
+      "name": "Generate Script",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        680,
+        440
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "33333333-3333-4333-8333-333333333332",
+              "name": "topic",
+              "value": "={{ $node['Prepare'].json.topic }}",
+              "type": "string"
+            },
+            {
+              "id": "33333333-3333-4333-8333-333333333333",
+              "name": "script",
+              "value": "={{ $json.choices[0].message.content }}",
+              "type": "string"
+            },
+            {
+              "id": "33333333-3333-4333-8333-333333333334",
+              "name": "title",
+              "value": "=НАТАША | {{ $node['Prepare'].json.topic.slice(0, 60) }}",
+              "type": "string"
+            },
+            {
+              "id": "33333333-3333-4333-8333-333333333335",
+              "name": "description",
+              "value": "={{ $json.choices[0].message.content.slice(0, 200) }}",
+              "type": "string"
+            },
+            {
+              "id": "33333333-3333-4333-8333-333333333336",
+              "name": "caption",
+              "value": "=НАТАША | FREE RUS — {{ $node['Prepare'].json.topic }}\n\n#NATASHA #FreeRus #AI #News",
+              "type": "string"
+            },
+            {
+              "id": "33333333-3333-4333-8333-333333333337",
+              "name": "hashtags",
+              "value": "#NATASHA #FreeRus #AI #News",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "00000000-0000-4000-8000-000000000005",
+      "name": "Extract Script",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        860,
+        440
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.elevenlabs.io/v1/text-to-speech/{{ $env.ELEVENLABS_VOICE_ID }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "xi-api-key",
+              "value": "={{ $env.ELEVENLABS_API_KEY }}"
+            },
+            {
+              "name": "Accept",
+              "value": "audio/mpeg"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ { text: $json.script, model_id: $env.ELEVENLABS_MODEL_ID || 'eleven_multilingual_v2', voice_settings: { stability: 0.5, similarity_boost: 0.75 } } }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "audio"
+            }
+          }
+        }
+      },
+      "id": "00000000-0000-4000-8000-000000000006",
+      "name": "Generate Voice",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1040,
+        440
+      ]
+    },
+    {
+      "parameters": {
+        "fileName": "/tmp/voice.mp3",
+        "dataPropertyName": "audio",
+        "options": {}
+      },
+      "id": "00000000-0000-4000-8000-000000000007",
+      "name": "Write Voice",
+      "type": "n8n-nodes-base.writeBinaryFile",
+      "typeVersion": 1,
+      "position": [
+        1220,
+        440
+      ]
+    },
+    {
+      "parameters": {
+        "executeOnce": true,
+        "command": "mkdir -p /tmp/natasha\nBG=\"${NATASHA_BG_IMAGE:-/home/node/assets/bg.jpg}\"\nif [ -f \"$BG\" ]; then\n  ffmpeg -y -loop 1 -i \"$BG\" -vf \"scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920\" -i /tmp/voice.mp3 -shortest -c:v libx264 -preset veryfast -pix_fmt yuv420p -c:a aac -b:a 192k -movflags +faststart /tmp/natasha/final.mp4\nelse\n  ffmpeg -y -f lavfi -i \"color=c=0x14141f:s=1080x1920:r=30\" -i /tmp/voice.mp3 -shortest -c:v libx264 -preset veryfast -pix_fmt yuv420p -c:a aac -b:a 192k -movflags +faststart /tmp/natasha/final.mp4\nfi\nls -la /tmp/natasha"
+      },
+      "id": "00000000-0000-4000-8000-000000000008",
+      "name": "Merge Video",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        1400,
+        440
+      ]
+    },
+    {
+      "parameters": {
+        "executeOnce": true,
+        "command": "stat -c %s /tmp/natasha/final.mp4"
+      },
+      "id": "00000000-0000-4000-8000-000000000009",
+      "name": "Get Video Size",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        1580,
+        440
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "33333333-3333-4333-8333-333333333341",
+              "name": "videoSize",
+              "value": "={{ parseFloat($json.stdout) }}",
+              "type": "number"
+            },
+            {
+              "id": "33333333-3333-4333-8333-333333333342",
+              "name": "topic",
+              "value": "={{ $node['Extract Script'].json.topic }}",
+              "type": "string"
+            },
+            {
+              "id": "33333333-3333-4333-8333-333333333343",
+              "name": "script",
+              "value": "={{ $node['Extract Script'].json.script }}",
+              "type": "string"
+            },
+            {
+              "id": "33333333-3333-4333-8333-333333333344",
+              "name": "title",
+              "value": "={{ $node['Extract Script'].json.title }}",
+              "type": "string"
+            },
+            {
+              "id": "33333333-3333-4333-8333-333333333345",
+              "name": "description",
+              "value": "={{ $node['Extract Script'].json.description }}",
+              "type": "string"
+            },
+            {
+              "id": "33333333-3333-4333-8333-333333333346",
+              "name": "caption",
+              "value": "={{ $node['Extract Script'].json.caption }}",
+              "type": "string"
+            },
+            {
+              "id": "33333333-3333-4333-8333-333333333347",
+              "name": "hashtags",
+              "value": "={{ $node['Extract Script'].json.hashtags }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "00000000-0000-4000-8000-000000000010",
+      "name": "Video Info",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1760,
+        440
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "33333333-3333-4333-8333-333333333351",
+              "name": "meta",
+              "value": "={{ { snippet: { title: $node['Video Info'].json.title, description: $node['Video Info'].json.description }, status: { privacyStatus: $env.YOUTUBE_PRIVACY || 'private' } } }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "00000000-0000-4000-8000-000000000011",
+      "name": "YouTube Payload",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1760,
+        600
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "33333333-3333-4333-8333-333333333361",
+              "name": "body",
+              "value": "={{ { post_info: { title: $node['Video Info'].json.title, privacy_level: $env.TIKTOK_PRIVACY_LEVEL || 'SELF_ONLY', disable_comment: false, disable_duet: false, disable_stitch: false }, source_info: { source: 'FILE_UPLOAD', video_size: $node['Video Info'].json.videoSize, chunk_size: $node['Video Info'].json.videoSize, total_chunk_count: 1 } } }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "00000000-0000-4000-8000-000000000012",
+      "name": "TikTok Payload",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1760,
+        680
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "33333333-3333-4333-8333-333333333371",
+              "name": "body",
+              "value": "={{ { media_type: 'REELS', video_url: $env.INSTAGRAM_VIDEO_URL, caption: $node['Video Info'].json.caption, share_to_feed: true, access_token: $env.INSTAGRAM_ACCESS_TOKEN } }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "00000000-0000-4000-8000-000000000013",
+      "name": "IG Payload",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1760,
+        760
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "33333333-3333-4333-8333-333333333381",
+              "name": "payload",
+              "value": "={{ { timestamp: $now.toISOString(), project: 'NATASHA', topic: $node['Video Info'].json.topic, script: $node['Video Info'].json.script, video_size: $node['Video Info'].json.videoSize, platforms: { youtube: $node['YouTube Upload'].json.body?.id || 'failed', tiktok: $node['TikTok Status'].json.data?.status || 'failed', instagram: $node['IG Publish'].json.id || 'failed' }, status: 'published' } }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "00000000-0000-4000-8000-000000000014",
+      "name": "Analytics Payload",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1760,
+        840
+      ]
+    },
+    {
+      "parameters": {
+        "filePath": "/tmp/natasha/final.mp4",
+        "dataPropertyName": "video"
+      },
+      "id": "00000000-0000-4000-8000-000000000015",
+      "name": "Read Video",
+      "type": "n8n-nodes-base.readBinaryFile",
+      "typeVersion": 1,
+      "position": [
+        1940,
+        440
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "sendVideo",
+        "chatId": "={{ $env.TELEGRAM_CHAT_ID }}",
+        "binaryData": true,
+        "binaryPropertyName": "video",
+        "additionalFields": {
+          "caption": "=🎬 Готово! {{ $node['Video Info'].json.title }}"
+        }
+      },
+      "id": "00000000-0000-4000-8000-000000000016",
+      "name": "Send Review",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2120,
+        440
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "1",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&part=snippet,status",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Upload-Content-Length",
+              "value": "={{ $node['Video Info'].json.videoSize }}"
+            },
+            {
+              "name": "X-Upload-Content-Type",
+              "value": "video/mp4"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ $node['YouTube Payload'].json.meta }}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "id": "00000000-0000-4000-8000-000000000017",
+      "name": "YouTube Init",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2300,
+        320
+      ],
+      "credentials": {
+        "googleApi": {
+          "id": "2",
+          "name": "Google account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "filePath": "/tmp/natasha/final.mp4",
+        "dataPropertyName": "video"
+      },
+      "id": "00000000-0000-4000-8000-000000000018",
+      "name": "Read Video YT",
+      "type": "n8n-nodes-base.readBinaryFile",
+      "typeVersion": 1,
+      "position": [
+        2480,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "={{ $json.headers.location }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleApi",
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "video",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "id": "00000000-0000-4000-8000-000000000019",
+      "name": "YouTube Upload",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2660,
+        320
+      ],
+      "credentials": {
+        "googleApi": {
+          "id": "2",
+          "name": "Google account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://open.tiktokapis.com/v2/post/publish/video/init/",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.TIKTOK_ACCESS_TOKEN }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ $node['TikTok Payload'].json.body }}",
+        "options": {}
+      },
+      "id": "00000000-0000-4000-8000-000000000020",
+      "name": "TikTok Init",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2300,
+        500
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "filePath": "/tmp/natasha/final.mp4",
+        "dataPropertyName": "video"
+      },
+      "id": "00000000-0000-4000-8000-000000000021",
+      "name": "Read Video TK",
+      "type": "n8n-nodes-base.readBinaryFile",
+      "typeVersion": 1,
+      "position": [
+        2480,
+        500
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "={{ $json.data.upload_url }}",
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "video",
+        "options": {}
+      },
+      "id": "00000000-0000-4000-8000-000000000022",
+      "name": "TikTok Upload",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2660,
+        500
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "resume": "timeInterval",
+        "amount": 30,
+        "unit": "seconds"
+      },
+      "id": "00000000-0000-4000-8000-000000000023",
+      "name": "Wait TikTok",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2840,
+        500
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://open.tiktokapis.com/v2/post/publish/status/fetch/",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $env.TIKTOK_ACCESS_TOKEN }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ { publish_id: $node['TikTok Init'].json.data.publish_id } }}",
+        "options": {}
+      },
+      "id": "00000000-0000-4000-8000-000000000024",
+      "name": "TikTok Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3020,
+        500
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v21.0/{{ $env.INSTAGRAM_BUSINESS_ACCOUNT_ID }}/media",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ $node['IG Payload'].json.body }}",
+        "options": {}
+      },
+      "id": "00000000-0000-4000-8000-000000000025",
+      "name": "IG Create",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2300,
+        680
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "resume": "timeInterval",
+        "amount": 30,
+        "unit": "seconds"
+      },
+      "id": "00000000-0000-4000-8000-000000000026",
+      "name": "Wait IG",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2480,
+        680
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://graph.facebook.com/v21.0/{{ $node['IG Create'].json.id }}?fields=status_code&access_token={{ $env.INSTAGRAM_ACCESS_TOKEN }}",
+        "options": {}
+      },
+      "id": "00000000-0000-4000-8000-000000000027",
+      "name": "IG Check",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2660,
+        680
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v21.0/{{ $env.INSTAGRAM_BUSINESS_ACCOUNT_ID }}/media_publish",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ { creation_id: $node['IG Create'].json.id, access_token: $env.INSTAGRAM_ACCESS_TOKEN } }}",
+        "options": {}
+      },
+      "id": "00000000-0000-4000-8000-000000000028",
+      "name": "IG Publish",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2840,
+        680
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:5678/webhook/analytics",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ $node['Analytics Payload'].json.payload }}",
+        "options": {}
+      },
+      "id": "00000000-0000-4000-8000-000000000029",
+      "name": "Log Analytics",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3200,
+        500
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "={{ $env.TELEGRAM_CHAT_ID }}",
+        "text": "=✅ НАТАША ОПУБЛИКОВАНА\n\n🎬 {{ $node['Video Info'].json.title }}\n\n📊 Результаты:\n- ▶️ YouTube: {{ $node['YouTube Upload'].json.body?.id ? '✅ ' + $node['YouTube Upload'].json.body.id : '❌ ошибка' }}\n- 🎵 TikTok: {{ $node['TikTok Status'].json.data?.status === 'PUBLISH_COMPLETE' ? '✅ опубликовано' : '❌ ' + ($node['TikTok Status'].json.data?.status || 'ошибка') }}\n- 📸 Instagram: {{ $node['IG Publish'].json.id ? '✅ ' + $node['IG Publish'].json.id : '❌ ошибка (нужен публичный URL видео)' }}\n\n🔗 https://youtube.com/@NATASHAFREE_RUS\n#NATASHA #FreeRus #AI",
+        "additionalFields": {}
+      },
+      "id": "00000000-0000-4000-8000-000000000030",
+      "name": "Send Completion",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        3380,
+        500
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "1",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "analytics",
+        "responseMode": "onReceived",
+        "responseData": "noData",
+        "options": {}
+      },
+      "id": "00000000-0000-4000-8000-000000000031",
+      "name": "Analytics Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        3200,
+        720
+      ],
+      "webhookId": "33333333-3333-4333-8333-333333333399"
+    }
+  ],
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Prepare",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Prepare",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare": {
+      "main": [
+        [
+          {
+            "node": "Generate Script",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Script": {
+      "main": [
+        [
+          {
+            "node": "Extract Script",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Script": {
+      "main": [
+        [
+          {
+            "node": "Generate Voice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Voice": {
+      "main": [
+        [
+          {
+            "node": "Write Voice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write Voice": {
+      "main": [
+        [
+          {
+            "node": "Merge Video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Video": {
+      "main": [
+        [
+          {
+            "node": "Get Video Size",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Video Size": {
+      "main": [
+        [
+          {
+            "node": "Video Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Video Info": {
+      "main": [
+        [
+          {
+            "node": "YouTube Payload",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "TikTok Payload",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "IG Payload",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Analytics Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "YouTube Payload": {
+      "main": [
+        [
+          {
+            "node": "Read Video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Video": {
+      "main": [
+        [
+          {
+            "node": "Send Review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Review": {
+      "main": [
+        [
+          {
+            "node": "YouTube Init",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "YouTube Init": {
+      "main": [
+        [
+          {
+            "node": "Read Video YT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Video YT": {
+      "main": [
+        [
+          {
+            "node": "YouTube Upload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "YouTube Upload": {
+      "main": [
+        [
+          {
+            "node": "TikTok Init",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TikTok Init": {
+      "main": [
+        [
+          {
+            "node": "Read Video TK",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Video TK": {
+      "main": [
+        [
+          {
+            "node": "TikTok Upload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TikTok Upload": {
+      "main": [
+        [
+          {
+            "node": "Wait TikTok",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait TikTok": {
+      "main": [
+        [
+          {
+            "node": "TikTok Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TikTok Status": {
+      "main": [
+        [
+          {
+            "node": "IG Create",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IG Create": {
+      "main": [
+        [
+          {
+            "node": "Wait IG",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait IG": {
+      "main": [
+        [
+          {
+            "node": "IG Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IG Check": {
+      "main": [
+        [
+          {
+            "node": "IG Publish",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IG Publish": {
+      "main": [
+        [
+          {
+            "node": "Log Analytics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Analytics": {
+      "main": [
+        [
+          {
+            "node": "Send Completion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "credentials": {
+    "telegramApi": {
+      "id": "1",
+      "name": "Telegram account"
+    },
+    "googleApi": {
+      "id": "2",
+      "name": "Google account"
+    }
+  }
+}

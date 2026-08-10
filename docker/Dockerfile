@@ -19,4 +19,13 @@ COPY --from=builder /usr/lib/ /usr/lib/
 # (путь можно переопределить переменной NATASHA_BG_IMAGE)
 COPY assets/bg.jpg /home/node/assets/bg.jpg
 
+# Бутстрап telegramApi-credential из $TELEGRAM_BOT_TOKEN при старте
+# (см. docker/entrypoint.sh — идемпотентный импорт, секрет не в образе).
+# Перед импортом токен проверяется docker/validate-telegram.sh (getMe),
+# чтобы публикации не падали с непонятным 401 Unauthorized.
+COPY docker/entrypoint.sh /docker-entrypoint-bootstrap.sh
+COPY docker/validate-telegram.sh /docker/validate-telegram.sh
+RUN chmod +x /docker-entrypoint-bootstrap.sh /docker/validate-telegram.sh
+ENTRYPOINT ["tini", "--", "/docker-entrypoint-bootstrap.sh"]
+
 USER node

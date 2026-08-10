@@ -111,6 +111,12 @@ Images (Alpine)» — в нём удалены `apk` и `curl`, а ffmpeg отс
 - **Telegram** — бот (`TELEGRAM_BOT_TOKEN`) и чат администратора
   (`TELEGRAM_CHAT_ID`), куда приходит видео на проверку и отчёт
 
+Перед публикацией токен проверяется `docker/validate-telegram.sh` (getMe):
+при пустом или недействительном токене скрипт вернёт понятную ошибку
+(exit 1/2) вместо 401 Unauthorized. В compose-стеке проверка выполняется
+автоматически при старте n8n (`docker/entrypoint.sh`); для standalone-скриптов
+публикации вызывайте валидатор первым шагом.
+
 По умолчанию публикация приватная (`YOUTUBE_PRIVACY=private`,
 `TIKTOK_PRIVACY_LEVEL=SELF_ONLY`) — безопасно для тестирования.
 

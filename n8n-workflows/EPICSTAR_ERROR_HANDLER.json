@@ -1,0 +1,120 @@
+{
+  "updatedAt": "2026-08-10T12:25:08.433Z",
+  "createdAt": "2026-08-03T16:31:34.810Z",
+  "id": "qaOKj4tUV3Gwih7n",
+  "name": "EPICSTAR_ERROR_HANDLER",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "t",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const e = $input.first().json;\nconst exec = e.execution || {};\nconst err = exec.error || e.error || {};\nconst wf = e.workflow || {};\nconst get = (v, fb) => (v === undefined || v === null || v === '' ? fb : v);\nconst esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');\nreturn [{ json: {\n    workflow_name: esc(get(wf.name, '?')),\n    workflow_id: get(wf.id, '?'),\n    execution_id: get(exec.id, '?'),\n    node_name: esc(get(err.node && err.node.name, get(exec.lastNodeExecuted, '?'))),\n    error_message: esc(String(get(err.message, 'unknown')).slice(0, 500)),\n    platform: get(e.platform, 'unknown'),\n    content_id: get(e.content_id, 'unknown'),\n    timestamp: new Date().toISOString()\n}}];"
+      },
+      "id": "f",
+      "name": "Format",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "-1004457068141",
+        "text": "=🚨 EPICSTAR ERROR\nWorkflow: {{  $json.workflow_name }} ({{  $json.workflow_id }})\nNode: {{  $json.node_name }}\nPlatform: {{  $json.platform }}\nContent ID: {{  $json.content_id }}\nExecution: {{  $json.execution_id }}\nTime: {{  $json.timestamp }}\nError: {{  $json.error_message }}",
+        "additionalFields": {
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        432,
+        0
+      ],
+      "id": "b6aacecc-cedd-411b-b722-8defc54c28da",
+      "name": "Telegram - Notify Error",
+      "webhookId": "5cb69d2f-0d14-4212-a5ea-a9b1973bceb1",
+      "credentials": {
+        "telegramApi": {
+          "id": "qrEvH4ZaW6Kfuxj3",
+          "name": "INTERNET_BEZ_GRANIC_BOT"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Format",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format": {
+      "main": [
+        [
+          {
+            "node": "Telegram - Notify Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "4d7503f0-71c2-49c5-90cc-4c1a28f0f91e",
+  "activeVersionId": "4d7503f0-71c2-49c5-90cc-4c1a28f0f91e",
+  "versionCounter": 27,
+  "triggerCount": 0,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2026-08-03T16:31:34.812Z",
+      "createdAt": "2026-08-03T16:31:34.812Z",
+      "role": "workflow:owner",
+      "workflowId": "qaOKj4tUV3Gwih7n",
+      "projectId": "nYBVKIUyUUsVvyZC",
+      "project": {
+        "updatedAt": "2026-05-19T01:39:59.098Z",
+        "createdAt": "2026-05-13T18:14:29.931Z",
+        "id": "nYBVKIUyUUsVvyZC",
+        "name": "EPIC  STAR <buchmanchik@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "6d4f53af-1dc8-4d73-a90d-3ff3321feeda"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": "Version 4d7503f0",
+    "description": "Add HTML escaping to error fields; set Telegram Parse Mode=HTML"
+  }
+}

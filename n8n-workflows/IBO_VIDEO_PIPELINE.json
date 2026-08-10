@@ -1,0 +1,325 @@
+{
+  "updatedAt": "2026-08-10T13:38:22.855Z",
+  "createdAt": "2026-08-10T12:57:36.536Z",
+  "id": "6nV3nD7BfKWSwfzU",
+  "name": "IBO_VIDEO_PIPELINE",
+  "description": null,
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "id": "5ea784f8-82a9-41c2-b205-faddb5783289",
+      "name": "Every 3 Hours",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "b178cd40-7c7c-42c7-8683-741e99eda3c7",
+      "name": "Read RSS",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.1,
+      "position": [
+        208,
+        0
+      ],
+      "parameters": {
+        "url": "https://hnrss.org/frontpage",
+        "options": {}
+      }
+    },
+    {
+      "id": "d000dd7c-a1d1-401c-be7b-2456395bb52e",
+      "name": "Format Topic",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const items = $input.all();\nif (!items.length) return [];\nconst sd = $getWorkflowStaticData('global');\nfunction fnv1a(str) {\n  let h = 0x811c9dc5;\n  for (let i = 0; i < str.length; i++) {\n    h ^= str.charCodeAt(i);\n    h = (h * 0x01000193) >>> 0;\n  }\n  return h.toString(16).padStart(8, '0');\n}\nfor (const item of items) {\n  const it = item.json;\n  const stable = it.guid || it.link || (it.title || '');\n  const content_id = 'rss-' + fnv1a(String(stable));\n  if (sd.lastContentId === content_id) continue;\n  const snippet = (it.contentSnippet || it.content || '').slice(0, 300);\n  const topic = [it.title || '', snippet].filter(Boolean).join(' | ');\n  return [{ json: { topic, content_id } }];\n}\nreturn [];"
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "anthropicApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "anthropic-version",
+              "value": "2023-06-01"
+            },
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({model: \"claude-sonnet-5\", max_tokens: 4000, system: \"Ты — сценарист сети ИНТЕРНЕТ БЕЗ ОГРАНИЧЕНИЙ (VPN, приватность, обход блокировок). Основная точка входа: Telegram-канал @INTERNET_BEZ_GRANIC_RUS. Бренд: чёрно-жёлтая палитра, щит и замок. Тон уверенный, слегка тревожный, без лжи и кликбейта. Формат — текстовая инфографика. Каждый блок — короткая фраза до 90 символов, читабельная на слайде. Ответь СТРОГО валидным JSON без markdown-обёртки с полями: hook (string, до 80 симв), blocks (array из 3-4 строк), cta (string, до 60 симв, зови в Telegram-канал), tiktok_caption (string, до 150 симв с эмодзи)\", messages: [{role: \"user\", content: \"Тема ролика: \" + $json.topic}]}) }}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        416,
+        0
+      ],
+      "id": "1a7cc676-691b-492d-b36b-0ed1e11a69cb",
+      "name": "Generate Script (Claude)",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "credentials": {
+        "anthropicApi": {
+          "id": "zrqLfRKuk5HbthfB",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const msg = $input.first().json;\nconst content = Array.isArray(msg.content) ? msg.content : [];\nconst textBlock = content.find(b => b.type === 'text') || content[content.length - 1];\nconst raw = (textBlock && textBlock.text ? textBlock.text : '').trim();\nconst clean = raw.replace(/^```json/, '').replace(/```$/, '').trim();\nconst parsed = JSON.parse(clean);\nif (!parsed.hook || !Array.isArray(parsed.blocks) || !parsed.blocks.length) throw new Error('Claude вернул ответ без hook/blocks');\nparsed.topic = $('Format Topic').first().json.topic;\nreturn [{ json: parsed }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        624,
+        0
+      ],
+      "id": "81f949b4-da12-4826-825e-59427540592f",
+      "name": "Parse Script"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://renderer:8080/render",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({hook: $json.hook, blocks: $json.blocks, cta: $json.cta, topic: $json.topic}) }}",
+        "options": {
+          "timeout": 600000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        832,
+        0
+      ],
+      "id": "14748118-3361-4d21-a227-5936afb96110",
+      "name": "Render Video"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.output }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "video"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1040,
+        0
+      ],
+      "id": "df58fe7a-0161-44be-bfdb-1852f7bb2382",
+      "name": "Download Video"
+    },
+    {
+      "parameters": {
+        "operation": "sendVideo",
+        "chatId": "-1004457068141",
+        "binaryData": true,
+        "binaryPropertyName": "video",
+        "additionalFields": {
+          "caption": "={{ $('Parse Script').first().json.tiktok_caption }}👉 Полный гайд: t.me/INTERNET_BEZ_GRANIC_RUS"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1248,
+        0
+      ],
+      "id": "fe483970-7993-46e0-9832-0d1109ebcc2f",
+      "name": "Post to Telegram Channel",
+      "webhookId": "7bf2e761-9a9a-44fb-a857-899b1e4e6713",
+      "credentials": {
+        "telegramApi": {
+          "id": "qrEvH4ZaW6Kfuxj3",
+          "name": "INTERNET_BEZ_GRANIC_BOT"
+        }
+      }
+    },
+    {
+      "id": "14e0fcc2-5230-4569-9223-05c72ffce926",
+      "name": "Mark Processed",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1664,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const sd = $getWorkflowStaticData('global');\nconst cid = $('Format Topic').first().json.content_id;\nsd.lastContentId = cid;\nreturn [{ json: { marked: cid } }];"
+      }
+    }
+  ],
+  "connections": {
+    "Every 3 Hours": {
+      "main": [
+        [
+          {
+            "node": "Read RSS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read RSS": {
+      "main": [
+        [
+          {
+            "node": "Format Topic",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Topic": {
+      "main": [
+        [
+          {
+            "node": "Generate Script (Claude)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Script (Claude)": {
+      "main": [
+        [
+          {
+            "node": "Parse Script",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Script": {
+      "main": [
+        [
+          {
+            "node": "Render Video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Render Video": {
+      "main": [
+        [
+          {
+            "node": "Download Video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Video": {
+      "main": [
+        [
+          {
+            "node": "Post to Telegram Channel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post to Telegram Channel": {
+      "main": [
+        [
+          {
+            "node": "Mark Processed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "qaOKj4tUV3Gwih7n",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "f0976427-3d04-4766-bafc-889f8e4c9816",
+  "activeVersionId": null,
+  "versionCounter": 48,
+  "triggerCount": 0,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2026-08-10T12:57:36.538Z",
+      "createdAt": "2026-08-10T12:57:36.538Z",
+      "role": "workflow:owner",
+      "workflowId": "6nV3nD7BfKWSwfzU",
+      "projectId": "nYBVKIUyUUsVvyZC",
+      "project": {
+        "updatedAt": "2026-05-19T01:39:59.098Z",
+        "createdAt": "2026-05-13T18:14:29.931Z",
+        "id": "nYBVKIUyUUsVvyZC",
+        "name": "EPIC  STAR <buchmanchik@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "6d4f53af-1dc8-4d73-a90d-3ff3321feeda"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": null,
+    "description": null
+  }
+}

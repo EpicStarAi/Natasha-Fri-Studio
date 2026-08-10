@@ -1,0 +1,179 @@
+{
+  "updatedAt": "2026-08-10T11:41:34.535Z",
+  "createdAt": "2026-08-03T16:31:36.170Z",
+  "id": "PhKm7TcDDaIHUE8C",
+  "name": "EPICSTAR_RSS_CONTENT_ENGINE",
+  "description": null,
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours"
+            }
+          ]
+        }
+      },
+      "id": "s",
+      "name": "Every Hour",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://hnrss.org/frontpage",
+        "options": {}
+      },
+      "id": "r",
+      "name": "Read RSS",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.1,
+      "position": [
+        224,
+        0
+      ],
+      "retryOnFail": true,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all(); if (!items.length) return []; const it = items[0].json; const stable = it.guid || it.link || (it.title || ''); function fnv1a(str){let h=0x811c9dc5;for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=(h*0x01000193)>>>0;}return h.toString(16).padStart(8,'0');} const content_id = 'rss-' + fnv1a(String(stable)); const sd = $getWorkflowStaticData('global'); if (sd.lastContentId === content_id) return []; const text = `${it.title||''}\n\n${(it.contentSnippet||it.content||'').slice(0,400)}\n\n${it.link||''}`; return [{json:{content_id, source:'rss', created_at: new Date().toISOString(), title: it.title||'', text, caption: text, platforms:['telegram'], link: it.link||null, image_url: null, video_url: null}}];"
+      },
+      "id": "f",
+      "name": "Format Latest",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:5678/webhook/epicstar-publish",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "id": "d",
+      "name": "Send To Distributor",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        672,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const sd = $getWorkflowStaticData('global'); const cid = $('Format Latest').first().json.content_id; sd.lastContentId = cid; return [{json:{marked: cid}}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        0
+      ],
+      "id": "1e28bc00-a44b-4535-a6d7-b1f0f6e5d0d5",
+      "name": "Mark Processed"
+    }
+  ],
+  "connections": {
+    "Every Hour": {
+      "main": [
+        [
+          {
+            "node": "Read RSS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read RSS": {
+      "main": [
+        [
+          {
+            "node": "Format Latest",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Latest": {
+      "main": [
+        [
+          {
+            "node": "Send To Distributor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send To Distributor": {
+      "main": [
+        [
+          {
+            "node": "Mark Processed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "qaOKj4tUV3Gwih7n",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": {
+    "node:Every Hour": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": null,
+  "pinData": {},
+  "versionId": "5c4d2042-9bbb-40fc-b486-702fc0650505",
+  "activeVersionId": null,
+  "versionCounter": 19,
+  "triggerCount": 1,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2026-08-03T16:31:36.171Z",
+      "createdAt": "2026-08-03T16:31:36.171Z",
+      "role": "workflow:owner",
+      "workflowId": "PhKm7TcDDaIHUE8C",
+      "projectId": "nYBVKIUyUUsVvyZC",
+      "project": {
+        "updatedAt": "2026-05-19T01:39:59.098Z",
+        "createdAt": "2026-05-13T18:14:29.931Z",
+        "id": "nYBVKIUyUUsVvyZC",
+        "name": "EPIC  STAR <buchmanchik@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "6d4f53af-1dc8-4d73-a90d-3ff3321feeda"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": "Version 5c4d2042",
+    "description": "Phase 2: Read RSS retry (3x/5000ms), Format Latest dedup via static data, added Mark Processed node"
+  }
+}

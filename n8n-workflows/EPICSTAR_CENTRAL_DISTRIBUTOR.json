@@ -1,0 +1,171 @@
+{
+  "updatedAt": "2026-08-10T11:37:38.122Z",
+  "createdAt": "2026-08-03T16:00:23.757Z",
+  "id": "5JrJmd1V3aB3jVTe",
+  "name": "EPICSTAR_CENTRAL_DISTRIBUTOR",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "epicstar-publish",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "7eb3eece-cdc9-4c1c-a7ce-154aab8e2dfc"
+    },
+    {
+      "parameters": {
+        "jsCode": "const b = $input.first().json.body || $input.first().json; const hooks = {telegram:'epicstar-telegram-post', instagram:'epicstar-instagram-post', tiktok:'epicstar-tiktok-publish', youtube:'epicstar-youtube-upload'}; const platforms = (b.platforms || ['telegram']).filter(p => hooks[p]); function fnv1a(str){let h=0x811c9dc5;for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=(h*0x01000193)>>>0;}return h.toString(16).padStart(8,'0');} const stableKey = b.link || b.video_url || b.image_url || ((b.title||'') + '|' + (b.text||'')); const source = b.source || 'external'; const content_id = b.content_id || (source + '-' + fnv1a(String(stableKey))); const created_at = b.created_at || new Date().toISOString(); return platforms.map(p => ({json:{platform:p, hook:hooks[p], payload:{ content_id, source, platform: p, created_at, title: b.title||'', text: b.text||'', caption: b.caption||b.text||'', image_url: b.image_url||null, video_url: b.video_url||null }}}));"
+      },
+      "id": "split_by_platform",
+      "name": "Split By Platform",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://localhost:5678/webhook/{{$json.hook}}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.payload) }}",
+        "options": {}
+      },
+      "id": "dispatch",
+      "name": "Dispatch",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        448,
+        0
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const dispatched = $('Split By Platform').all(); const items = $input.all(); const results = {}; let okAll = true; items.forEach((item, idx) => { const src = dispatched[idx] ? dispatched[idx].json : {}; const platform = src.platform || ('item_' + idx); const err = item.json ? item.json.error : undefined; if (err) { okAll = false; results[platform] = { ok: false, error: String(err.message || err.description || JSON.stringify(err)).slice(0, 300) }; } else { results[platform] = { ok: true }; } }); const content_id = dispatched.length ? ((dispatched[0].json.payload||{}).content_id || 'unknown') : 'unknown'; return [{json:{ ok: okAll, content_id, results }}];"
+      },
+      "id": "aggregate",
+      "name": "Aggregate",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "respond",
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        880,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Split By Platform",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split By Platform": {
+      "main": [
+        [
+          {
+            "node": "Dispatch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dispatch": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "qaOKj4tUV3Gwih7n",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "c1e14360-a4e8-4136-969e-0695548e8691",
+  "activeVersionId": "c1e14360-a4e8-4136-969e-0695548e8691",
+  "versionCounter": 15,
+  "triggerCount": 1,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2026-08-03T16:00:23.759Z",
+      "createdAt": "2026-08-03T16:00:23.759Z",
+      "role": "workflow:owner",
+      "workflowId": "5JrJmd1V3aB3jVTe",
+      "projectId": "nYBVKIUyUUsVvyZC",
+      "project": {
+        "updatedAt": "2026-05-19T01:39:59.098Z",
+        "createdAt": "2026-05-13T18:14:29.931Z",
+        "id": "nYBVKIUyUUsVvyZC",
+        "name": "EPIC  STAR <buchmanchik@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "6d4f53af-1dc8-4d73-a90d-3ff3321feeda"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": "Version c1e14360",
+    "description": "Phase 2: Split By Platform hash-based content_id + hook map, Dispatch On Error=Continue, Aggregate per-platform results"
+  }
+}

@@ -1,0 +1,340 @@
+{
+  "updatedAt": "2026-08-10T11:24:30.656Z",
+  "createdAt": "2026-08-03T16:00:19.593Z",
+  "id": "udFVdV1KhFUhZfGU",
+  "name": "EPICSTAR_TELEGRAM_AUTOPOST",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "epicstar-telegram-post",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "b53559e1-f9df-4209-94fb-d61fe3178c99"
+    },
+    {
+      "parameters": {
+        "jsCode": "const b = $input.first().json.body || $input.first().json;\nconst text = b.text || b.caption || '';\nconst image = b.image_url; const video = b.video_url;\nlet m, p;\nif (video) { m='sendVideo'; p={chat_id: -1004457068141, video, caption: text}; }\nelse if (image) { m='sendPhoto'; p={chat_id: -1004457068141, photo: image, caption: text}; }\nelse { m='sendMessage'; p={chat_id: -1004457068141, text}; }\nreturn [{json:{tg_method:m, payload:p}}];"
+      },
+      "id": "build_payload",
+      "name": "Build Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "respond",
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        672,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "-1004457068141",
+        "text": "={{ $json.payload.text}}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        144,
+        144
+      ],
+      "id": "1386bdc7-8674-4680-8097-a09c1c808925",
+      "name": "Telegram - Send Message",
+      "webhookId": "92993e89-8906-4b0d-b818-a8a54a9a0d11",
+      "credentials": {
+        "telegramApi": {
+          "id": "qrEvH4ZaW6Kfuxj3",
+          "name": "INTERNET_BEZ_GRANIC_BOT"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendPhoto",
+        "chatId": "-1004457068141",
+        "file": "={{ $json.payload.photo}}",
+        "additionalFields": {
+          "caption": "={{ $json.payload.caption}}"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        352,
+        144
+      ],
+      "id": "b7719086-5b52-4331-9e04-5738a72c4fb6",
+      "name": "Telegram - Send Photo",
+      "webhookId": "43d83d5f-2d76-4a8b-92ab-babb86b25f20",
+      "credentials": {
+        "telegramApi": {
+          "id": "qrEvH4ZaW6Kfuxj3",
+          "name": "INTERNET_BEZ_GRANIC_BOT"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendVideo",
+        "chatId": "-1004457068141",
+        "file": "={{ $json.payload.video}}",
+        "additionalFields": {
+          "caption": "={{ $json.payload.caption}}"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        560,
+        144
+      ],
+      "id": "7fda4786-dd39-4731-bc45-840cf80f9b3b",
+      "name": "Telegram - Send Video",
+      "webhookId": "a7a4e716-1faa-47f4-9a77-06783af04d24",
+      "credentials": {
+        "telegramApi": {
+          "id": "qrEvH4ZaW6Kfuxj3",
+          "name": "INTERNET_BEZ_GRANIC_BOT"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.tg_method}}",
+                    "rightValue": "sendMessage",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "6f6e5c5d-1081-415c-8795-5a72a75e626e"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "sendMessage"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "cd8b2da0-bfc6-4125-a8c6-ce41d575236b",
+                    "leftValue": "={{ $json.tg_method}}",
+                    "rightValue": "sendPhoto",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "sendPhoto"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "ef7c6463-e86a-45fd-b10f-4d05c2940b1f",
+                    "leftValue": "={{ $json.tg_method}}",
+                    "rightValue": "sendVideo",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "sendVideo"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        432,
+        0
+      ],
+      "id": "fca5cca5-9594-421b-99db-94f1c62eec60",
+      "name": "Switch"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Build Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Payload": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram - Send Message": {
+      "main": [
+        [
+          {
+            "node": "Respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram - Send Photo": {
+      "main": [
+        [
+          {
+            "node": "Respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Telegram - Send Message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Telegram - Send Photo",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Telegram - Send Video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram - Send Video": {
+      "main": [
+        [
+          {
+            "node": "Respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "qaOKj4tUV3Gwih7n",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "5341ffc2-9611-4b87-849f-4055bae81f5a",
+  "activeVersionId": "5341ffc2-9611-4b87-849f-4055bae81f5a",
+  "versionCounter": 70,
+  "triggerCount": 1,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2026-08-03T16:00:19.598Z",
+      "createdAt": "2026-08-03T16:00:19.598Z",
+      "role": "workflow:owner",
+      "workflowId": "udFVdV1KhFUhZfGU",
+      "projectId": "nYBVKIUyUUsVvyZC",
+      "project": {
+        "updatedAt": "2026-05-19T01:39:59.098Z",
+        "createdAt": "2026-05-13T18:14:29.931Z",
+        "id": "nYBVKIUyUUsVvyZC",
+        "name": "EPIC  STAR <buchmanchik@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "6d4f53af-1dc8-4d73-a90d-3ff3321feeda"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": "Version 5341ffc2",
+    "description": "Phase 2: set Error Workflow = EPICSTAR_ERROR_HANDLER"
+  }
+}

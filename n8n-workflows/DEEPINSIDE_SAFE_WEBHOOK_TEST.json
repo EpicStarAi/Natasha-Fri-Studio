@@ -1,0 +1,138 @@
+{
+  "updatedAt": "2026-07-21T01:06:06.122Z",
+  "createdAt": "2026-06-23T09:34:11.624Z",
+  "id": "bJYJ6UG7I0kRqrUI",
+  "name": "DEEPINSIDE_SAFE_WEBHOOK_TEST",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "deepinside-safe-test",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "e96ba69e-63a4-42db-9aea-76661a359fa2",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        160,
+        -144
+      ],
+      "webhookId": "deepinside-safe-test"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f1",
+              "name": "message",
+              "value": "safe test payload",
+              "type": "string"
+            },
+            {
+              "id": "f2",
+              "name": "source",
+              "value": "deepinside-safe-test",
+              "type": "string"
+            },
+            {
+              "id": "f3",
+              "name": "mode",
+              "value": "TEST_ONLY",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "177da18b-1b71-4ea5-9a92-2c6d7336605c",
+      "name": "Edit Fields",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        400,
+        -144
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"ok\": true,\n  \"source\": \"deepinside-safe-test\",\n  \"mode\": \"TEST_ONLY\"\n}",
+        "options": {}
+      },
+      "id": "96b0931a-c3b2-42c1-9f96-fbe76641e5f1",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        640,
+        -144
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "ce22d72a-d545-4eae-9844-e087109cbfda",
+  "activeVersionId": "ce22d72a-d545-4eae-9844-e087109cbfda",
+  "versionCounter": 22,
+  "triggerCount": 1,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2026-06-23T09:34:11.627Z",
+      "createdAt": "2026-06-23T09:34:11.627Z",
+      "role": "workflow:owner",
+      "workflowId": "bJYJ6UG7I0kRqrUI",
+      "projectId": "nYBVKIUyUUsVvyZC",
+      "project": {
+        "updatedAt": "2026-05-19T01:39:59.098Z",
+        "createdAt": "2026-05-13T18:14:29.931Z",
+        "id": "nYBVKIUyUUsVvyZC",
+        "name": "EPIC  STAR <buchmanchik@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "6d4f53af-1dc8-4d73-a90d-3ff3321feeda"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": "DEEPINSIDE_SAFE_WEBHOOK_TEST_v1",
+    "description": "Safe test-only webhook workflow for DEEPINSIDE controlled execution gate. No Telegram, no social, no mass send."
+  }
+}

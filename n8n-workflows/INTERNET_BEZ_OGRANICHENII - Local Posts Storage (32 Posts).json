@@ -1,0 +1,130 @@
+{
+  "updatedAt": "2026-08-04T12:41:23.668Z",
+  "createdAt": "2026-08-04T12:41:23.668Z",
+  "id": "54jFWmoBAEoN5FhM",
+  "name": "INTERNET_BEZ_OGRANICHENII - Local Posts Storage (32 Posts)",
+  "description": null,
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        250,
+        300
+      ],
+      "id": "5187fffb-6d0e-446f-bc80-7a06a30709ea"
+    },
+    {
+      "name": "Posts Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        450,
+        300
+      ],
+      "parameters": {
+        "mode": "raw",
+        "jsonData": "{\"posts\":[{\"blog_id\":\"INTERNET_BEZ_OGRANICHENIY\",\"platform\":\"instagram\",\"video_id\":\"02\",\"day\":\"Aug 3\",\"time\":\"09:00\",\"schedule_datetime\":\"2026-08-03T09:00:00+03:00\"},{\"blog_id\":\"INTERNET_BEZ_OGRANICHENIY\",\"platform\":\"tiktok\",\"video_id\":\"02\",\"day\":\"Aug 3\",\"time\":\"09:00\",\"schedule_datetime\":\"2026-08-03T09:00:00+03:00\"},{\"blog_id\":\"INTERNET_BEZ_OGRANICHENIY\",\"platform\":\"youtube\",\"video_id\":\"02\",\"day\":\"Aug 3\",\"time\":\"09:00\",\"schedule_datetime\":\"2026-08-03T09:00:00+03:00\"},{\"blog_id\":\"INTERNET_BEZ_OGRANICHENIY\",\"platform\":\"pinterest\",\"video_id\":\"02\",\"day\":\"Aug 3\",\"time\":\"09:00\",\"schedule_datetime\":\"2026-08-03T09:00:00+03:00\"},{\"blog_id\":\"INTERNET_BEZ_OGRANICHENIY\",\"platform\":\"instagram\",\"video_id\":\"03\",\"day\":\"Aug 3\",\"time\":\"12:00\",\"schedule_datetime\":\"2026-08-03T12:00:00+03:00\"},{\"blog_id\":\"INTERNET_BEZ_OGRANICHENIY\",\"platform\":\"tiktok\",\"video_id\":\"03\",\"day\":\"Aug 3\",\"time\":\"12:00\",\"schedule_datetime\":\"2026-08-03T12:00:00+03:00\"},{\"blog_id\":\"INTERNET_BEZ_OGRANICHENIY\",\"platform\":\"youtube\",\"video_id\":\"03\",\"day\":\"Aug 3\",\"time\":\"12:00\",\"schedule_datetime\":\"2026-08-03T12:00:00+03:00\"},{\"blog_id\":\"INTERNET_BEZ_OGRANICHENIY\",\"platform\":\"pinterest\",\"video_id\":\"03\",\"day\":\"Aug 3\",\"time\":\"12:00\",\"schedule_datetime\":\"2026-08-03T12:00:00+03:00\"},{\"blog_id\":\"INTERNET_BEZ_OGRANICHENIY\",\"platform\":\"instagram\",\"video_id\":\"04\",\"day\":\"Aug 3\",\"time\":\"15:00\",\"schedule_datetime\":\"2026-08-03T15:00:00+03:00\"},{\"blog_id\":\"INTERNET_BEZ_OGRANICHENIY\",\"platform\":\"tiktok\",\"video_id\":\"04\",\"day\":\"Aug 3\",\"time\":\"15:00\",\"schedule_datetime\":\"2026-08-03T15:00:00+03:00\"},{\"blog_id\":\"INTERNET_BEZ_OGRANICHENIY\",\"platform\":\"youtube\",\"video_id\":\"04\",\"day\":\"Aug 3\",\"time\":\"15:00\",\"schedule_datetime\":\"2026-08-03T15:00:00+03:00\"},{\"blog_id\":\"INTERNET_BEZ_OGRANICHENIY\",\"platform\":\"pinterest\",\"video_id\":\"04\",\"day\":\"Aug 3\",\"time\":\"15:00\",\"schedule_datetime\":\"2026-08-03T15:00:00+03:00\"},{\"blog_id\":\"INTERNET_BEZ_OGRANICHENIY\",\"platform\":\"instagram\",\"video_id\":\"05\",\"day\":\"Aug 3\",\"time\":\"21:00\",\"schedule_datetime\":\"2026-08-03T21:00:00+03:00\"},{\"blog_id\":\"INTERNET_BEZ_OGRANICHENIY\",\"platform\":\"tiktok\",\"video_id\":\"05\",\"day\":\"Aug 3\",\"time\":\"21:00\",\"schedule_datetime\":\"2026-08-03T21:00:00+03:00\"},{\"blog_id\":\"INTERNET_BEZ_OGRANICHENIY\",\"platform\":\"youtube\",\"video_id\":\"05\",\"day\":\"Aug 3\",\"time\":\"21:00\",\"schedule_datetime\":\"2026-08-03T21:00:00+03:00\"},{\"blog_id\":\"INTERNET_BEZ_OGRANICHENIY\",\"platform\":\"pinterest\",\"video_id\":\"05\",\"day\":\"Aug 3\",\"time\":\"21:00\",\"schedule_datetime\":\"2026-08-03T21:00:00+03:00\"},{\"blog_id\":\"INTERNET_BEZ_OGRANICHENIY\",\"platform\":\"instagram\",\"video_id\":\"06\",\"day\":\"Aug 4\",\"time\":\"09:00\",\"schedule_datetime\":\"2026-08-04T09:00:00+03:00\"},{\"blog_id\":\"INTERNET_BEZ_OGRANICHENIY\",\"platform\":\"tiktok\",\"video_id\":\"06\",\"day\":\"Aug 4\",\"time\":\"09:00\",\"schedule_datetime\":\"2026-08-04T09:00:00+03:00\"},{\"blog_id\":\"INTERNET_BEZ_OGRANICHENIY\",\"platform\":\"youtube\",\"video_id\":\"06\",\"day\":\"Aug 4\",\"time\":\"09:00\",\"schedule_datetime\":\"2026-08-04T09:00:00+03:00\"},{\"blog_id\":\"INTERNET_BEZ_OGRANICHENIY\",\"platform\":\"pinterest\",\"video_id\":\"06\",\"day\":\"Aug 4\",\"time\":\"09:00\",\"schedule_datetime\":\"2026-08-04T09:00:00+03:00\"},{\"blog_id\":\"INTERNET_BEZ_OGRANICHENIY\",\"platform\":\"instagram\",\"video_id\":\"07\",\"day\":\"Aug 4\",\"time\":\"12:00\",\"schedule_datetime\":\"2026-08-04T12:00:00+03:00\"},{\"blog_id\":\"INTERNET_BEZ_OGRANICHENIY\",\"platform\":\"tiktok\",\"video_id\":\"07\",\"day\":\"Aug 4\",\"time\":\"12:00\",\"schedule_datetime\":\"2026-08-04T12:00:00+03:00\"},{\"blog_id\":\"INTERNET_BEZ_OGRANICHENIY\",\"platform\":\"youtube\",\"video_id\":\"07\",\"day\":\"Aug 4\",\"time\":\"12:00\",\"schedule_datetime\":\"2026-08-04T12:00:00+03:00\"},{\"blog_id\":\"INTERNET_BEZ_OGRANICHENIY\",\"platform\":\"pinterest\",\"video_id\":\"07\",\"day\":\"Aug 4\",\"time\":\"12:00\",\"schedule_datetime\":\"2026-08-04T12:00:00+03:00\"},{\"blog_id\":\"INTERNET_BEZ_OGRANICHENIY\",\"platform\":\"instagram\",\"video_id\":\"08\",\"day\":\"Aug 4\",\"time\":\"15:00\",\"schedule_datetime\":\"2026-08-04T15:00:00+03:00\"},{\"blog_id\":\"INTERNET_BEZ_OGRANICHENIY\",\"platform\":\"tiktok\",\"video_id\":\"08\",\"day\":\"Aug 4\",\"time\":\"15:00\",\"schedule_datetime\":\"2026-08-04T15:00:00+03:00\"},{\"blog_id\":\"INTERNET_BEZ_OGRANICHENIY\",\"platform\":\"youtube\",\"video_id\":\"08\",\"day\":\"Aug 4\",\"time\":\"15:00\",\"schedule_datetime\":\"2026-08-04T15:00:00+03:00\"},{\"blog_id\":\"INTERNET_BEZ_OGRANICHENIY\",\"platform\":\"pinterest\",\"video_id\":\"08\",\"day\":\"Aug 4\",\"time\":\"15:00\",\"schedule_datetime\":\"2026-08-04T15:00:00+03:00\"},{\"blog_id\":\"INTERNET_BEZ_OGRANICHENIY\",\"platform\":\"instagram\",\"video_id\":\"02\",\"day\":\"Aug 4\",\"time\":\"21:00\",\"schedule_datetime\":\"2026-08-04T21:00:00+03:00\"},{\"blog_id\":\"INTERNET_BEZ_OGRANICHENIY\",\"platform\":\"tiktok\",\"video_id\":\"02\",\"day\":\"Aug 4\",\"time\":\"21:00\",\"schedule_datetime\":\"2026-08-04T21:00:00+03:00\"},{\"blog_id\":\"INTERNET_BEZ_OGRANICHENIY\",\"platform\":\"youtube\",\"video_id\":\"02\",\"day\":\"Aug 4\",\"time\":\"21:00\",\"schedule_datetime\":\"2026-08-04T21:00:00+03:00\"},{\"blog_id\":\"INTERNET_BEZ_OGRANICHENIY\",\"platform\":\"pinterest\",\"video_id\":\"02\",\"day\":\"Aug 4\",\"time\":\"21:00\",\"schedule_datetime\":\"2026-08-04T21:00:00+03:00\"}]}"
+      },
+      "id": "e2e2e5ac-4e5f-453f-a937-8b6238e21c62"
+    },
+    {
+      "name": "Loop Each Post",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        650,
+        300
+      ],
+      "parameters": {
+        "batchSize": 1,
+        "dataPath": "posts"
+      },
+      "id": "85ac1b53-8044-4238-b653-9666e9e80b35"
+    },
+    {
+      "name": "Save Post to File",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        850,
+        300
+      ],
+      "parameters": {
+        "mode": "raw",
+        "jsonData": "={\"post_saved\": true, \"platform\": \"={{ $json.platform }}\", \"day\": \"={{ $json.day }}\", \"time\": \"={{ $json.time }}\", \"video_id\": \"={{ $json.video_id }}\", \"scheduled_at\": \"={{ $json.schedule_datetime }}\"}"
+      },
+      "id": "19d3a792-6f30-4968-99d0-da5d2a530d62"
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Posts Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Posts Data": {
+      "main": [
+        [
+          {
+            "node": "Loop Each Post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Each Post": {
+      "main": [
+        [
+          {
+            "node": "Save Post to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {},
+  "staticData": null,
+  "meta": null,
+  "pinData": null,
+  "versionId": "2dde7467-4b0f-4f9e-913e-0f36da6a6c7c",
+  "activeVersionId": null,
+  "versionCounter": 1,
+  "triggerCount": 0,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2026-08-04T12:41:23.670Z",
+      "createdAt": "2026-08-04T12:41:23.670Z",
+      "role": "workflow:owner",
+      "workflowId": "54jFWmoBAEoN5FhM",
+      "projectId": "nYBVKIUyUUsVvyZC",
+      "project": {
+        "updatedAt": "2026-05-19T01:39:59.098Z",
+        "createdAt": "2026-05-13T18:14:29.931Z",
+        "id": "nYBVKIUyUUsVvyZC",
+        "name": "EPIC  STAR <buchmanchik@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "6d4f53af-1dc8-4d73-a90d-3ff3321feeda"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": null,
+    "description": null
+  }
+}

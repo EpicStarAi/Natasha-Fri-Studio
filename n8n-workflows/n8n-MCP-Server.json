@@ -1,0 +1,99 @@
+{
+  "updatedAt": "2026-07-21T04:29:26.510Z",
+  "createdAt": "2026-07-21T04:27:09.187Z",
+  "id": "GL0pgiseCeVOkwbl",
+  "name": "n8n-MCP-Server",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "authentication": "bearerAuth",
+        "path": "c9706449-079d-4700-b050-bbc6a9842569"
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "7f9336e3-5ff6-4c80-9e5a-9efc64317b6d",
+      "name": "MCP Server Trigger",
+      "webhookId": "c9706449-079d-4700-b050-bbc6a9842569",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "9ItBJick4ya1QLwx",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "description": "Use this tool to get current n8n instance status and basic info. Returns workflow count and instance health.",
+        "jsCode": "return JSON.stringify({\n  status: 'ok',\n  instance: 'n8n-local',\n  url: 'http://127.0.0.1:5678',\n  timestamp: new Date().toISOString(),\n  query: query\n});"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.3,
+      "position": [
+        96,
+        208
+      ],
+      "id": "d3c4eb97-b4c5-4b4e-8602-3e454752e846",
+      "name": "Code Tool"
+    }
+  ],
+  "connections": {
+    "Code Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "203f0030-e2b3-4851-a442-5173ac5d321b",
+  "activeVersionId": "203f0030-e2b3-4851-a442-5173ac5d321b",
+  "versionCounter": 22,
+  "triggerCount": 1,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2026-07-21T04:27:09.193Z",
+      "createdAt": "2026-07-21T04:27:09.193Z",
+      "role": "workflow:owner",
+      "workflowId": "GL0pgiseCeVOkwbl",
+      "projectId": "nYBVKIUyUUsVvyZC",
+      "project": {
+        "updatedAt": "2026-05-19T01:39:59.098Z",
+        "createdAt": "2026-05-13T18:14:29.931Z",
+        "id": "nYBVKIUyUUsVvyZC",
+        "name": "EPIC  STAR <buchmanchik@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "6d4f53af-1dc8-4d73-a90d-3ff3321feeda"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": "Version 203f0030",
+    "description": ""
+  }
+}

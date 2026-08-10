@@ -1,0 +1,92 @@
+{
+  "updatedAt": "2026-08-10T11:32:26.865Z",
+  "createdAt": "2026-08-10T11:30:16.598Z",
+  "id": "3d7NNWDC7SHKGzgd",
+  "name": "EPICSTAR_ERROR_TEST",
+  "description": null,
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "epicstar-error-test",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "65601854-7833-4e52-ab8c-aa529c6c6c2b",
+      "name": "Webhook",
+      "webhookId": "74576a50-e9a5-4713-b027-cc95fbf02b9d"
+    },
+    {
+      "parameters": {
+        "jsCode": "throw new Error('EPICSTAR_ERROR_TEST: intentional test error (safe to ignore)');"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "102d3070-94c9-4cc7-bb61-631e55e35805",
+      "name": "Code in JavaScript"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "qaOKj4tUV3Gwih7n",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "323c058d-3119-4653-9123-c0cbc512da43",
+  "activeVersionId": null,
+  "versionCounter": 13,
+  "triggerCount": 1,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2026-08-10T11:30:16.600Z",
+      "createdAt": "2026-08-10T11:30:16.600Z",
+      "role": "workflow:owner",
+      "workflowId": "3d7NNWDC7SHKGzgd",
+      "projectId": "nYBVKIUyUUsVvyZC",
+      "project": {
+        "updatedAt": "2026-05-19T01:39:59.098Z",
+        "createdAt": "2026-05-13T18:14:29.931Z",
+        "id": "nYBVKIUyUUsVvyZC",
+        "name": "EPIC  STAR <buchmanchik@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "6d4f53af-1dc8-4d73-a90d-3ff3321feeda"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": "Version 323c058d",
+    "description": ""
+  }
+}

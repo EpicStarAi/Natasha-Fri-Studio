@@ -116,6 +116,20 @@ docker compose up -d --build      # пересобрать (после прав�
 docker compose ps                 # статус
 ```
 
+## 📦 Перенос workflow с рабочего инстанса (порт 5678)
+
+Реальные боевые workflow EPICSTAR (центральный дистрибьютор `epicstar-publish` + публикация в YouTube/TikTok/Instagram/Telegram, RSS-движок, AI-апрув, error handler и др. — всего 14) живут в контейнере `ai-evo-n8n` (localhost:5678). Они выгружены и сохранены в `n8n-workflows/` (по одному файлу на workflow).
+
+Импорт в любой инстанс (основной 5680, превью 5681):
+
+```bash
+for f in n8n-workflows/*.json; do
+  docker cp "$f" <container>:/tmp/wf.json && docker exec <container> n8n import:workflow --input=/tmp/wf.json
+done
+```
+
+⚠️ `EPICSTAR_CENTRAL_DISTRIBUTOR` шлёт запросы на `http://localhost:5678/webhook/{{$json.hook}}` — внутри контейнера n8n всегда слушает 5678, так что на любом инстансе это работает. Credentials (telegramApi `INTERNET_BEZ_GRANIC_BOT`, httpBearerAuth) на новые инстансы **не переносятся** — создаются заново в UI (вкладка Credentials).
+
 ---
 
 ## 🚨 Если что-то не так

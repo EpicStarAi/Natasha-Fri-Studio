@@ -1,0 +1,86 @@
+{
+  "updatedAt": "2026-08-06T08:55:47.481Z",
+  "createdAt": "2026-08-06T08:55:47.481Z",
+  "id": "ZW3ObU0H5lZzWs0c",
+  "name": "QUOTA-CMD - Webhook (local)",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "quota-cmd",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "quota-local-webhook-01",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "quota-cmd-local-01"
+    },
+    {
+      "parameters": {},
+      "id": "quota-local-noop-01",
+      "name": "NoOp",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        220,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "NoOp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": null,
+  "versionId": "2bbbd4d2-9288-4909-964a-f8475f5ca4a0",
+  "activeVersionId": "2bbbd4d2-9288-4909-964a-f8475f5ca4a0",
+  "versionCounter": 6,
+  "triggerCount": 1,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2026-08-06T08:55:47.485Z",
+      "createdAt": "2026-08-06T08:55:47.485Z",
+      "role": "workflow:owner",
+      "workflowId": "ZW3ObU0H5lZzWs0c",
+      "projectId": "nYBVKIUyUUsVvyZC",
+      "project": {
+        "updatedAt": "2026-05-19T01:39:59.098Z",
+        "createdAt": "2026-05-13T18:14:29.931Z",
+        "id": "nYBVKIUyUUsVvyZC",
+        "name": "EPIC  STAR <buchmanchik@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "6d4f53af-1dc8-4d73-a90d-3ff3321feeda"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": null,
+    "description": null
+  }
+}

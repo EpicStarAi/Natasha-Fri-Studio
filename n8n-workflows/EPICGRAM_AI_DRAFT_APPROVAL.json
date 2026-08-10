@@ -1,0 +1,154 @@
+{
+  "updatedAt": "2026-07-21T10:59:32.704Z",
+  "createdAt": "2026-07-21T04:32:21.208Z",
+  "id": "J2VRSzj5ZxLHRwho",
+  "name": "EPICGRAM_AI_DRAFT_APPROVAL",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "epicgram-draft",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "9dbfac4b-2977-4dd8-b4c9-22eccfd1e387",
+      "name": "Webhook",
+      "webhookId": "5ab466e7-dbce-436f-b886-a69a2c664a27"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Нода 1: Валидация входящего запроса от EPICGRAM\n// Webhook body в n8n доступен прямо в $json (не $json.body)\nconst item = $input.first().json;\n\n// Поддержка двух форматов: прямой body или вложенный в body\nconst body = (item.body && typeof item.body === 'object') ? item.body : item;\n\n// Проверяем обязательные поля\nconst required = ['workspace_id', 'chat_id', 'messages', 'task'];\nfor (const field of required) {\n  if (body[field] === undefined || body[field] === null) {\n    throw new Error(`Missing required field: ${field}`);\n  }\n}\n\n// Принимаем любой task (prepare_reply и другие)\nconst messages = Array.isArray(body.messages) ? body.messages : [];\nconst lastMessages = messages.slice(-10); // берём последние 10\n\nreturn [{\n  json: {\n    workspace_id: body.workspace_id,\n    chat_id: body.chat_id,\n    chat_title: body.chat_title || 'Unknown Chat',\n    task: body.task,\n    messages: lastMessages,\n    message_count: messages.length,\n    validated_at: new Date().toISOString()\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "c8e96061-43dd-4acd-b541-31a93b35b30d",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:11434/v1/chat/completions",
+        "authentication": "none",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": []
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: \"qwen2.5-coder:7b\", max_tokens: 1000, temperature: 0.3, stream: false, messages: [{ role: \"system\", content: \"You are the EPICGRAM AI draft operator. Compose a concise, useful reply in the language of the supplied conversation. Never expose credentials or session data. Return only the draft text.\" }, { role: \"user\", content: \"Chat: \" + String($json.chat_title || \"\") + \"\\nTask: \" + String($json.task || \"prepare_reply\") + \"\\nMessages context:\\n\" + JSON.stringify($json.messages || []) + \"\\n\\nWrite a draft reply for this chat.\" }] }) }}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        416,
+        0
+      ],
+      "id": "fe41b79e-8ff1-4354-8448-07f87f587f4f",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ status: \"pending_approval\", draft_text: String(($json.choices && $json.choices[0] && $json.choices[0].message && $json.choices[0].message.content) || \"\"), requires_approval: true, model_used: String($json.model || \"qwen2.5-coder:7b\"), workspace_id: String($(\"Code in JavaScript\").item.json.workspace_id || \"\"), chat_id: String($(\"Code in JavaScript\").item.json.chat_id || \"\"), generated_at: new Date().toISOString() }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        624,
+        0
+      ],
+      "id": "c4d15b2b-d4f3-43bc-975e-4404912b9b48",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": true
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "9b4b6302-5a52-42ae-997a-cf29b6748783",
+  "activeVersionId": "9b4b6302-5a52-42ae-997a-cf29b6748783",
+  "versionCounter": 59,
+  "triggerCount": 1,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2026-07-21T04:32:21.209Z",
+      "createdAt": "2026-07-21T04:32:21.209Z",
+      "role": "workflow:owner",
+      "workflowId": "J2VRSzj5ZxLHRwho",
+      "projectId": "nYBVKIUyUUsVvyZC",
+      "project": {
+        "updatedAt": "2026-05-19T01:39:59.098Z",
+        "createdAt": "2026-05-13T18:14:29.931Z",
+        "id": "nYBVKIUyUUsVvyZC",
+        "name": "EPIC  STAR <buchmanchik@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "6d4f53af-1dc8-4d73-a90d-3ff3321feeda"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": null,
+    "description": null
+  }
+}

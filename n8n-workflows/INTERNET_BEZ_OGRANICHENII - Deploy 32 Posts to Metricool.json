@@ -1,0 +1,166 @@
+{
+  "updatedAt": "2026-08-04T02:34:05.755Z",
+  "createdAt": "2026-08-04T02:34:05.755Z",
+  "id": "gxZ6azDRPh2rwoPL",
+  "name": "INTERNET_BEZ_OGRANICHENII - Deploy 32 Posts to Metricool",
+  "description": null,
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "name": "Start",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        250,
+        300
+      ],
+      "id": "cf192f8d-5b69-4725-b1c2-3e59bf8f4917"
+    },
+    {
+      "name": "Posts Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [
+        450,
+        300
+      ],
+      "parameters": {
+        "mode": "raw",
+        "jsonData": "{\"posts\": [{\"blog_id\": \"INTERNET_BEZ_OGRANICHENIY\", \"platform\": \"instagram\", \"type\": \"REEL\", \"media_url\": \"https://drive.google.com/uc?export=download&id=1Y9bVZQTjni503pwsiX5FcxEIWJAZRXMc\", \"caption\": \"Test\", \"schedule_datetime\": \"2026-08-03T09:00:00+03:00\"}]}"
+      },
+      "id": "b38c4764-fd15-46e8-bd67-def1adcc33fa"
+    },
+    {
+      "name": "Loop Each Post",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        650,
+        300
+      ],
+      "parameters": {
+        "batchSize": 1,
+        "dataPath": "posts"
+      },
+      "id": "a5e730b2-864a-47c0-b1ba-433a2dd5b388"
+    },
+    {
+      "name": "Send to Metricool",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        850,
+        300
+      ],
+      "parameters": {
+        "url": "https://api.metricool.com/v3/posts",
+        "method": "POST",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_API_TOKEN_HERE"
+            }
+          ]
+        },
+        "bodyParameters": {
+          "parameter": [
+            {
+              "name": "blog_id",
+              "value": "={{ $item.json.blog_id }}"
+            },
+            {
+              "name": "platform",
+              "value": "={{ $item.json.platform }}"
+            },
+            {
+              "name": "type",
+              "value": "={{ $item.json.type }}"
+            },
+            {
+              "name": "media_url",
+              "value": "={{ $item.json.media_url }}"
+            },
+            {
+              "name": "caption",
+              "value": "={{ $item.json.caption }}"
+            },
+            {
+              "name": "schedule_datetime",
+              "value": "={{ $item.json.schedule_datetime }}"
+            }
+          ]
+        }
+      },
+      "id": "f79e4dfd-d8ac-482b-b33c-f1201564ab74"
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Posts Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Posts Data": {
+      "main": [
+        [
+          {
+            "node": "Loop Each Post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Each Post": {
+      "main": [
+        [
+          {
+            "node": "Send to Metricool",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {},
+  "staticData": null,
+  "meta": null,
+  "pinData": null,
+  "versionId": "e598ad55-c7f3-4bfb-a186-b4eeda9202aa",
+  "activeVersionId": null,
+  "versionCounter": 1,
+  "triggerCount": 0,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2026-08-04T02:34:05.757Z",
+      "createdAt": "2026-08-04T02:34:05.757Z",
+      "role": "workflow:owner",
+      "workflowId": "gxZ6azDRPh2rwoPL",
+      "projectId": "nYBVKIUyUUsVvyZC",
+      "project": {
+        "updatedAt": "2026-05-19T01:39:59.098Z",
+        "createdAt": "2026-05-13T18:14:29.931Z",
+        "id": "nYBVKIUyUUsVvyZC",
+        "name": "EPIC  STAR <buchmanchik@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "6d4f53af-1dc8-4d73-a90d-3ff3321feeda"
+      }
+    }
+  ],
+  "versionMetadata": {
+    "name": null,
+    "description": null
+  }
+}

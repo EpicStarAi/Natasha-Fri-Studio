@@ -692,7 +692,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "http://localhost:5678/webhook/analytics",
+        "url": "=http://localhost:{{ $env.N8N_PORT || 5678 }}/webhook/analytics",
         "sendBody": true,
         "contentType": "json",
         "specifyBody": "json",
@@ -1057,14 +1057,5 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "credentials": {
-    "telegramApi": {
-      "id": "1",
-      "name": "Telegram account"
-    },
-    "googleApi": {
-      "id": "2",
-      "name": "Google account"
-    }
-  }
+  "id": "df78e726-3b9d-4d10-bb5a-030468a61882"
 }

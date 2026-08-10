@@ -44,7 +44,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const items = $input.all(); if (!items.length) return []; const it = items[0].json; const stable = it.guid || it.link || (it.title || ''); function fnv1a(str){let h=0x811c9dc5;for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=(h*0x01000193)>>>0;}return h.toString(16).padStart(8,'0');} const content_id = 'rss-' + fnv1a(String(stable)); const sd = $getWorkflowStaticData('global'); if (sd.lastContentId === content_id) return []; const text = `${it.title||''}\n\n${(it.contentSnippet||it.content||'').slice(0,400)}\n\n${it.link||''}`; return [{json:{content_id, source:'rss', created_at: new Date().toISOString(), title: it.title||'', text, caption: text, platforms:['telegram'], link: it.link||null, image_url: null, video_url: null}}];"
+        "jsCode": "const items = $input.all();\nif (!items.length) return [];\nconst sd = $getWorkflowStaticData('global');\nfunction fnv1a(str) {\n  let h = 0x811c9dc5;\n  for (let i = 0; i < str.length; i++) {\n    h ^= str.charCodeAt(i);\n    h = (h * 0x01000193) >>> 0;\n  }\n  return h.toString(16).padStart(8, '0');\n}\nfor (const item of items) {\n  const it = item.json;\n  const stable = it.guid || it.link || (it.title || '');\n  const content_id = 'rss-' + fnv1a(String(stable));\n  if (sd.lastContentId === content_id) continue;\n  const snippet = (it.contentSnippet || it.content || '').slice(0, 400);\n  const text = `${it.title || ''}\n\n${snippet}\n\n${it.link || ''}`;\n  return [{ json: { content_id, source: 'rss', created_at: new Date().toISOString(), title: it.title || '', text, caption: text, platforms: ['telegram'], link: it.link || null, image_url: null, video_url: null } }];\n}\nreturn [];"
       },
       "id": "f",
       "name": "Format Latest",

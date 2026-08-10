@@ -26,8 +26,7 @@ router.post("/chat", async (req, res) => {
     })),
   });
 
-  const text =
-    response.content[0]?.type === "text" ? response.content[0].text : "";
+  const text = response.content.find((b) => b.type === "text")?.text ?? "";
 
   const data = ChatResponse.parse({ message: text });
   res.json(data);

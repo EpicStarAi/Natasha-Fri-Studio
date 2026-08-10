@@ -47,11 +47,12 @@ services:
       - INSTAGRAM_BUSINESS_ACCOUNT_ID=${INSTAGRAM_BUSINESS_ACCOUNT_ID}
       - INSTAGRAM_ACCESS_TOKEN=${INSTAGRAM_ACCESS_TOKEN}
       - INSTAGRAM_VIDEO_URL=${INSTAGRAM_VIDEO_URL}
-      # Токен бота @INTERNET_BEZ_GRANIC_RUS_BOT (из @BotFather) — берётся из .env.
-      # docker/entrypoint.sh импортирует его в n8n-credential при старте,
-      # так что ноды Telegram работают без ручной настройки в UI.
+      # Ключи импортируются в n8n-credentials при старте (docker/entrypoint.sh)
+      # под фиксированными id — ноды workflow линкуются автоматически.
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
       - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - N8N_MCP_AUTH_TOKEN=${N8N_MCP_AUTH_TOKEN}
       - YOUTUBE_PRIVACY=${YOUTUBE_PRIVACY:-private}
       - NATASHA_BG_IMAGE=${NATASHA_BG_IMAGE:-/home/node/assets/bg.jpg}
     volumes:

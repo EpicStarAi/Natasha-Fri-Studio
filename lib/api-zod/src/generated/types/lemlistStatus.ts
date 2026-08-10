@@ -6,6 +6,9 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface HealthStatus {
-  status: string;
+export interface LemlistStatus {
+  connected: boolean;
+  expired?: boolean;
+  scope?: string | null;
+  connectedAt?: Date | null;
 }

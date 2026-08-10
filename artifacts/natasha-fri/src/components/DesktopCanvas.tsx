@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { useCanvas } from '@/hooks/use-canvas';
 import { MarkdownWindow } from './MarkdownWindow';
+import { ChatWindow } from './ChatWindow';
 import { Minus, Plus, Maximize, Search } from 'lucide-react';
 import { useAppState } from './AppStateProvider';
 
@@ -115,13 +116,23 @@ export function DesktopCanvas() {
       >
         {windows.map(w => (
           <div key={w.id} className="markdown-window">
-            <MarkdownWindow 
-              window={w} 
-              scale={scale}
-              isTop={topWindowId === w.id}
-              onUpdate={updateWindow}
-              onBringToFront={bringToFront}
-            />
+            {w.type === 'chat' ? (
+              <ChatWindow
+                window={w}
+                scale={scale}
+                isTop={topWindowId === w.id}
+                onUpdate={updateWindow}
+                onBringToFront={bringToFront}
+              />
+            ) : (
+              <MarkdownWindow
+                window={w}
+                scale={scale}
+                isTop={topWindowId === w.id}
+                onUpdate={updateWindow}
+                onBringToFront={bringToFront}
+              />
+            )}
           </div>
         ))}
       </div>

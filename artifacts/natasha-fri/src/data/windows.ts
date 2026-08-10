@@ -5,7 +5,7 @@ export type WindowAccess = 'public' | 'private';
 export interface WindowData {
   id: string;
   title: string;
-  type: 'hero' | 'content';
+  type: 'hero' | 'content' | 'chat';
   defaultX: number;
   defaultY: number;
   width: number;
@@ -234,5 +234,15 @@ export const initialWindows: WindowData[] = [
 - [ ] «VPN-сервис» — Интернет без ограничений *(в разработке, будущий продукт)*
 
 *Дорожная карта обновляется ежемесячно*`
+  },
+  {
+    id: 'claude-chat',
+    title: 'claude-assistant.md',
+    type: 'chat',
+    defaultX: 1100,
+    defaultY: 250,
+    width: 380,
+    height: 460,
+    access: 'public',
   }
 ];

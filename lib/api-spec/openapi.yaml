@@ -10,6 +10,10 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: chat
+    description: AI chat operations
+  - name: lemlist
+    description: Lemlist OAuth and API proxy operations
 paths:
   /healthz:
     get:
@@ -24,6 +28,107 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /chat:
+    post:
+      operationId: chat
+      tags: [chat]
+      summary: Chat with Claude AI
+      description: Send a list of messages and receive a Claude AI reply
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChatRequest"
+      responses:
+        "200":
+          description: AI response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatResponse"
+  /lemlist/oauth/authorize:
+    get:
+      operationId: lemlistOAuthAuthorize
+      tags: [lemlist]
+      summary: Start Lemlist OAuth flow
+      description: Redirects the browser to Lemlist's OAuth consent screen
+      responses:
+        "302":
+          description: Redirect to Lemlist authorization page
+  /lemlist/oauth/callback:
+    get:
+      operationId: lemlistOAuthCallback
+      tags: [lemlist]
+      summary: Lemlist OAuth callback
+      description: Handles the OAuth callback from Lemlist; exchanges code for a token
+      parameters:
+        - name: code
+          in: query
+          schema:
+            type: string
+        - name: state
+          in: query
+          schema:
+            type: string
+        - name: error
+          in: query
+          schema:
+            type: string
+        - name: error_description
+          in: query
+          schema:
+            type: string
+      responses:
+        "302":
+          description: Redirect to frontend with ?lemlist_connected=true or ?lemlist_error=...
+  /lemlist/oauth/status:
+    get:
+      operationId: lemlistOAuthStatus
+      tags: [lemlist]
+      summary: Lemlist connection status
+      description: Returns whether a valid Lemlist OAuth token is stored
+      responses:
+        "200":
+          description: Connection status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LemlistStatus"
+  /lemlist/oauth/disconnect:
+    delete:
+      operationId: lemlistOAuthDisconnect
+      tags: [lemlist]
+      summary: Disconnect Lemlist
+      description: Deletes the stored Lemlist OAuth token
+      responses:
+        "200":
+          description: Disconnected
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LemlistDisconnected"
+  /lemlist/campaigns:
+    get:
+      operationId: lemlistGetCampaigns
+      tags: [lemlist]
+      summary: List Lemlist campaigns
+      description: Proxy — returns all campaigns from the Lemlist API using the stored token
+      responses:
+        "200":
+          description: Array of campaign objects
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LemlistCampaign"
+        "401":
+          description: Not connected to Lemlist
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +138,71 @@ components:
           type: string
       required:
         - status
+    ChatMessage:
+      type: object
+      properties:
+        role:
+          type: string
+          enum: [user, assistant]
+        content:
+          type: string
+      required:
+        - role
+        - content
+    ChatRequest:
+      type: object
+      properties:
+        messages:
+          type: array
+          items:
+            $ref: "#/components/schemas/ChatMessage"
+      required:
+        - messages
+    ChatResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message
+    LemlistStatus:
+      type: object
+      properties:
+        connected:
+          type: boolean
+        expired:
+          type: boolean
+        scope:
+          type: string
+          nullable: true
+        connectedAt:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+        - connected
+    LemlistDisconnected:
+      type: object
+      properties:
+        disconnected:
+          type: boolean
+      required:
+        - disconnected
+    LemlistCampaign:
+      type: object
+      properties:
+        _id:
+          type: string
+        name:
+          type: string
+      required:
+        - _id
+        - name
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
 

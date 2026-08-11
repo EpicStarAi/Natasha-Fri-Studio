@@ -132,9 +132,28 @@ def make_slide(path, text, color, counter=None, telegram_pill=False,
     img.save(path)
 
 
+XFADE = 0.5  # длительность перекрёстного растворения между сценами
+
+
+def media_duration(path):
+    """Длительность файла в секундах (парсинг вывода ffmpeg -i)."""
+    p = subprocess.run([FFMPEG, "-i", path], capture_output=True, text=True)
+    for line in p.stderr.splitlines():
+        if "Duration:" in line:
+            hms = line.split("Duration:")[1].split(",")[0].strip()
+            h, m, s = hms.split(":")
+            return int(h) * 3600 + int(m) * 60 + float(s)
+    raise RuntimeError(f"не удалось определить длительность {path}")
+
+
 def png_to_segment(png, mp4, seconds):
+    """Сегмент из PNG с медленным кен-бёрнс-зумом — кадр «дышит»."""
+    frames = int(round(seconds * FPS))
+    zoom = f"zoompan=z='1+0.06*on/{frames}':x='(iw-iw/zoom)/2'" \
+           f":y='(ih-ih/zoom)/2':d={frames}:s={W}x{H}:fps={FPS}"
     subprocess.run([
         FFMPEG, "-y", "-loop", "1", "-framerate", str(FPS), "-i", png,
+        "-vf", f"scale={int(W*1.2)}:{int(H*1.2)},{zoom}",
         "-t", str(seconds), "-c:v", "libx264", "-preset", "veryfast",
         "-pix_fmt", "yuv420p", mp4,
     ], check=True, capture_output=True)
@@ -162,49 +181,68 @@ def main():
         plan.append(("cta", cta, YELLOW,
                      dict(telegram_pill=True, footer=True), CTA_SEC))
 
+        # если есть озвучка — тайминги сцен растягиваются под голос,
+        # чтобы видео закончилось вместе с ним (плюс короткий хвост)
+        durations = [seconds for *_ignored, seconds in plan]
+        if voice:
+            target = media_duration(voice) + 1.2
+            base_final = sum(durations) - XFADE * (len(plan) - 1)
+            scale = max(target / base_final, 0.6)
+            durations = [max(d * scale, 2.2) for d in durations]
+
         segments = []
-        for name, text, color, opts, seconds in plan:
+        for (name, text, color, opts, _), seconds in zip(plan, durations):
             png = os.path.join(tmp, f"{name}.png")
             mp4 = os.path.join(tmp, f"{name}.mp4")
             make_slide(png, text, color, **opts)
             png_to_segment(png, mp4, seconds)
             segments.append(mp4)
 
-        concat = os.path.join(tmp, "list.txt")
-        with open(concat, "w") as fh:
-            for s in segments:
-                fh.write(f"file '{s}'\n")
+        # склейка через xfade: сцены перетекают друг в друга
+        total = sum(durations) - XFADE * (len(segments) - 1)
+        inputs, graph = [], []
+        for s in segments:
+            inputs += ["-i", s]
+        chain_len = durations[0]
+        cur = "[0:v]"
+        for i in range(1, len(segments)):
+            offset = chain_len - XFADE
+            nxt = f"[vx{i}]"
+            graph.append(
+                f"{cur}[{i}:v]xfade=transition=fade:duration={XFADE}"
+                f":offset={offset:.3f}{nxt}"
+            )
+            chain_len = offset + durations[i]
+            cur = nxt
+        graph.append(f"{cur}fade=t=out:st={total - 0.6:.3f}:d=0.6[vout]")
 
-        total = (HOOK_SEC + n * BLOCK_SEC + CTA_SEC
-                 + (AFTERTASTE_SEC if aftertaste else 0))
-        # тихая эмбиент-подложка вместо тишины, чтобы у ролика была
-        # аудиодорожка (Telegram/TikTok глушат видео без звука)
+        # аудио: тихая эмбиент-подложка (Telegram/TikTok глушат видео
+        # без звука) + голос единым закадровым слоем поверх
+        n_in = len(segments)
         pad = (
             "aevalsrc=0.05*sin(2*PI*110*t)+0.035*sin(2*PI*165*t)"
-            f"+0.02*sin(2*PI*220*t):d={total}"
+            f"+0.02*sin(2*PI*220*t):d={total:.3f}"
         )
-        cmd = [
-            FFMPEG, "-y",
-            "-f", "concat", "-safe", "0", "-i", concat,
-            "-f", "lavfi", "-i", pad,
-        ]
+        inputs += ["-f", "lavfi", "-i", pad]
         if voice:
-            # голос поверх приглушённой подложки
-            cmd += [
-                "-i", voice,
-                "-filter_complex",
-                "[1:a]lowpass=f=600,volume=0.25[amb];"
-                "[2:a]volume=1.0[v];"
-                "[amb][v]amix=inputs=2:duration=first:dropout_transition=3[a]",
-                "-map", "0:v", "-map", "[a]",
-            ]
+            inputs += ["-i", voice]
+            graph.append(f"[{n_in}:a]lowpass=f=600,volume=0.22[amb]")
+            graph.append(f"[{n_in + 1}:a]volume=1.0[vc]")
+            graph.append(
+                "[amb][vc]amix=inputs=2:duration=first:"
+                "dropout_transition=3[aout]"
+            )
         else:
-            cmd += ["-af", "lowpass=f=600,volume=0.8"]
-        cmd += [
-            "-shortest", "-c:v", "copy", "-c:a", "aac", "-b:a", "128k",
-            "-movflags", "+faststart", out,
-        ]
-        subprocess.run(cmd, check=True, capture_output=True)
+            graph.append(f"[{n_in}:a]lowpass=f=600,volume=0.8[aout]")
+
+        subprocess.run([
+            FFMPEG, "-y", *inputs,
+            "-filter_complex", ";".join(graph),
+            "-map", "[vout]", "-map", "[aout]",
+            "-c:v", "libx264", "-preset", "veryfast", "-pix_fmt", "yuv420p",
+            "-c:a", "aac", "-b:a", "128k",
+            "-movflags", "+faststart", "-shortest", out,
+        ], check=True, capture_output=True)
         print(f"OK {out} ({total:.1f}s, {len(plan)} слайдов)")
     finally:
         shutil.rmtree(tmp, ignore_errors=True)

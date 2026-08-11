@@ -10,7 +10,10 @@
 поэтому подходит любая сборка ffmpeg (включая static-сборки без freetype).
 
 Использование:
-    python3 scripts/render_ibo.py script.json output.mp4
+    python3 scripts/render_ibo.py script.json output.mp4 [voiceover.mp3]
+
+Третий аргумент (опционально) — файл озвучки (например, из ElevenLabs);
+голос микшируется поверх тихой эмбиент-подложки.
 
 Зависимости: pillow (pip install pillow), ffmpeg.
 
@@ -137,10 +140,11 @@ def png_to_segment(png, mp4, seconds):
 
 
 def main():
-    if len(sys.argv) != 3:
+    if len(sys.argv) not in (3, 4):
         sys.exit(__doc__)
     spec = json.load(open(sys.argv[1]))
     out = sys.argv[2]
+    voice = sys.argv[3] if len(sys.argv) == 4 else None
     hook, blocks, cta = spec["hook"], spec["blocks"], spec["cta"]
 
     tmp = tempfile.mkdtemp(prefix="ibo-render-")
@@ -173,14 +177,28 @@ def main():
             "aevalsrc=0.05*sin(2*PI*110*t)+0.035*sin(2*PI*165*t)"
             f"+0.02*sin(2*PI*220*t):d={total}"
         )
-        subprocess.run([
+        cmd = [
             FFMPEG, "-y",
             "-f", "concat", "-safe", "0", "-i", concat,
             "-f", "lavfi", "-i", pad,
-            "-af", "lowpass=f=600,volume=0.8",
+        ]
+        if voice:
+            # голос поверх приглушённой подложки
+            cmd += [
+                "-i", voice,
+                "-filter_complex",
+                "[1:a]lowpass=f=600,volume=0.25[amb];"
+                "[2:a]volume=1.0[v];"
+                "[amb][v]amix=inputs=2:duration=first:dropout_transition=3[a]",
+                "-map", "0:v", "-map", "[a]",
+            ]
+        else:
+            cmd += ["-af", "lowpass=f=600,volume=0.8"]
+        cmd += [
             "-shortest", "-c:v", "copy", "-c:a", "aac", "-b:a", "128k",
             "-movflags", "+faststart", out,
-        ], check=True, capture_output=True)
+        ]
+        subprocess.run(cmd, check=True, capture_output=True)
         print(f"OK {out} ({total:.1f}s, {len(plan)} слайдов)")
     finally:
         shutil.rmtree(tmp, ignore_errors=True)

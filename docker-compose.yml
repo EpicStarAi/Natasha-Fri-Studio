@@ -36,6 +36,9 @@ services:
       - N8N_HOST=localhost
       - N8N_PORT=5678
       - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY:-natasha_dev_encryption_key}
+      # n8n 2.x отключает executeCommand по умолчанию (breaking change 2.0),
+      # а нода Merge Video без него не работает — включаем обратно.
+      - NODES_EXCLUDE=[]
       # === Пайплайн: ключи API ===
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4o-mini}

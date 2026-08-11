@@ -60,6 +60,9 @@ services:
       - NATASHA_BG_IMAGE=${NATASHA_BG_IMAGE:-/home/node/assets/bg.jpg}
     volumes:
       - n8n_data:/home/node/.n8n
+      # read-only монтирование workflow для автоимпорта (scripts/deploy.sh)
+      - ./n8n-workflows:/import/workflows:ro
+      - ./natasha-workflow.json:/import/natasha-workflow.json:ro
     depends_on:
       postgres:
         condition: service_healthy

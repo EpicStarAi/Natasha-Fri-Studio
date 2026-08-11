@@ -48,6 +48,7 @@ FOOTER = "@INTERNET_BEZ_GRANIC_RUS"
 
 HOOK_SEC = 5.0
 BLOCK_SEC = 4.5
+AFTERTASTE_SEC = 4.0
 CTA_SEC = 5.5
 
 MARGIN = 64
@@ -146,6 +147,7 @@ def main():
     out = sys.argv[2]
     voice = sys.argv[3] if len(sys.argv) == 4 else None
     hook, blocks, cta = spec["hook"], spec["blocks"], spec["cta"]
+    aftertaste = spec.get("aftertaste")
 
     tmp = tempfile.mkdtemp(prefix="ibo-render-")
     try:
@@ -154,6 +156,9 @@ def main():
         for i, block in enumerate(blocks, 1):
             plan.append((f"s{i}", block, WHITE,
                          dict(counter=f"{i}/{n}"), BLOCK_SEC))
+        if aftertaste:
+            # слайд-послевкусие: финальная мысль без счётчика и плашек
+            plan.append(("aftertaste", aftertaste, YELLOW, dict(), AFTERTASTE_SEC))
         plan.append(("cta", cta, YELLOW,
                      dict(telegram_pill=True, footer=True), CTA_SEC))
 
@@ -170,7 +175,8 @@ def main():
             for s in segments:
                 fh.write(f"file '{s}'\n")
 
-        total = HOOK_SEC + n * BLOCK_SEC + CTA_SEC
+        total = (HOOK_SEC + n * BLOCK_SEC + CTA_SEC
+                 + (AFTERTASTE_SEC if aftertaste else 0))
         # тихая эмбиент-подложка вместо тишины, чтобы у ролика была
         # аудиодорожка (Telegram/TikTok глушат видео без звука)
         pad = (

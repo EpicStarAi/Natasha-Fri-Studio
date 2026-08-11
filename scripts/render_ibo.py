@@ -38,9 +38,15 @@ BG = (13, 13, 21)
 YELLOW = (255, 212, 0)
 WHITE = (245, 245, 247)
 BLACK = (10, 10, 10)
-FONT = os.environ.get(
-    "IBO_FONT", "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
-)
+_FONT_CANDIDATES = [
+    os.environ.get("IBO_FONT", ""),
+    "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",  # debian/ubuntu
+    "/usr/share/fonts/ttf-dejavu/DejaVuSans-Bold.ttf",       # alpine
+    "/usr/share/fonts/dejavu/DejaVuSans-Bold.ttf",
+]
+FONT = next((f for f in _FONT_CANDIDATES if f and os.path.exists(f)), None)
+if not FONT:
+    sys.exit("Не найден ttf-шрифт с кириллицей — задайте IBO_FONT")
 FFMPEG = os.environ.get("FFMPEG_BIN", "ffmpeg")
 
 HEADER = "ИНТЕРНЕТ БЕЗ ОГРАНИЧЕНИЙ"
@@ -91,9 +97,17 @@ def wrap_by_width(draw, text, fnt, max_width):
     return lines
 
 
-def draw_header(draw, counter=None, telegram_pill=False):
+def make_header_png(path):
+    """Статичная шапка бренда отдельным слоем: не зумится и не двоится
+    на кроссфейдах — накладывается поверх готового видео."""
+    img = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(img)
     draw.ellipse((44, 58, 64, 78), fill=YELLOW)
     draw.text((84, 52), HEADER, font=font(30), fill=YELLOW)
+    img.save(path)
+
+
+def draw_header(draw, counter=None, telegram_pill=False):
     if counter:
         x0, y0, w, h = W - 190, 42, 140, 64
         draw.rounded_rectangle((x0, y0, x0 + w, y0 + h), radius=32, fill=YELLOW)
@@ -214,11 +228,18 @@ def main():
             )
             chain_len = offset + durations[i]
             cur = nxt
-        graph.append(f"{cur}fade=t=out:st={total - 0.6:.3f}:d=0.6[vout]")
+
+        # статичная шапка поверх всего ролика, затем финальное затемнение
+        header_png = os.path.join(tmp, "header.png")
+        make_header_png(header_png)
+        hdr_idx = len(segments)
+        inputs += ["-loop", "1", "-i", header_png]
+        graph.append(f"{cur}[{hdr_idx}:v]overlay=0:0[vh]")
+        graph.append(f"[vh]fade=t=out:st={total - 0.6:.3f}:d=0.6[vout]")
 
         # аудио: тихая эмбиент-подложка (Telegram/TikTok глушат видео
         # без звука) + голос единым закадровым слоем поверх
-        n_in = len(segments)
+        n_in = hdr_idx + 1
         pad = (
             "aevalsrc=0.05*sin(2*PI*110*t)+0.035*sin(2*PI*165*t)"
             f"+0.02*sin(2*PI*220*t):d={total:.3f}"

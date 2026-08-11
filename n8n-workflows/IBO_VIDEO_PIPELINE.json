@@ -112,47 +112,6 @@
     },
     {
       "parameters": {
-        "method": "POST",
-        "url": "http://renderer:8080/render",
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({hook: $json.hook, blocks: $json.blocks, cta: $json.cta, aftertaste: $json.aftertaste, topic: $json.topic}) }}",
-        "options": {
-          "timeout": 600000
-        }
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.4,
-      "position": [
-        832,
-        0
-      ],
-      "id": "14748118-3361-4d21-a227-5936afb96110",
-      "name": "Render Video"
-    },
-    {
-      "parameters": {
-        "url": "={{ $json.output }}",
-        "options": {
-          "response": {
-            "response": {
-              "responseFormat": "file",
-              "outputPropertyName": "video"
-            }
-          }
-        }
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.4,
-      "position": [
-        1040,
-        0
-      ],
-      "id": "df58fe7a-0161-44be-bfdb-1852f7bb2382",
-      "name": "Download Video"
-    },
-    {
-      "parameters": {
         "operation": "sendVideo",
         "chatId": "-1004457068141",
         "binaryData": true,
@@ -202,6 +161,117 @@
       ],
       "id": "b1dca9f0-77ca-4f1e-9c2e-ibo0000cap01",
       "name": "Build Caption"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.elevenlabs.io/v1/text-to-speech/{{ $env.ELEVENLABS_VOICE_ID }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "xi-api-key",
+              "value": "={{ $env.ELEVENLABS_API_KEY }}"
+            },
+            {
+              "name": "Accept",
+              "value": "audio/mpeg"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ text: ($json.voiceover && $json.voiceover.trim()) || [$json.hook].concat($json.blocks).concat([$json.cta]).join('. '), model_id: $env.ELEVENLABS_MODEL_ID || 'eleven_multilingual_v2', voice_settings: { stability: 0.5, similarity_boost: 0.75 } }) }}",
+        "options": {
+          "timeout": 120000,
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "audio"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        832,
+        -200
+      ],
+      "id": "ibo0000-tts0-4000-8000-000000000001",
+      "name": "Generate Voiceover"
+    },
+    {
+      "parameters": {
+        "fileName": "=/tmp/ibo-{{ $execution.id }}-voice.mp3",
+        "dataPropertyName": "audio",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.writeBinaryFile",
+      "typeVersion": 1,
+      "position": [
+        1012,
+        -200
+      ],
+      "id": "ibo0000-wvc0-4000-8000-000000000002",
+      "name": "Write Voice"
+    },
+    {
+      "parameters": {
+        "jsCode": "const s = $('Parse Script').first().json;\nconst payload = JSON.stringify({ hook: s.hook, blocks: s.blocks, cta: s.cta, aftertaste: s.aftertaste || undefined });\nreturn [{ json: {}, binary: { script: { data: Buffer.from(payload).toString('base64'), mimeType: 'application/json', fileName: 'script.json' } } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1192,
+        -200
+      ],
+      "id": "ibo0000-prep-4000-8000-000000000003",
+      "name": "Prepare Script File"
+    },
+    {
+      "parameters": {
+        "fileName": "=/tmp/ibo-{{ $execution.id }}-script.json",
+        "dataPropertyName": "script",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.writeBinaryFile",
+      "typeVersion": 1,
+      "position": [
+        1372,
+        -200
+      ],
+      "id": "ibo0000-wsc0-4000-8000-000000000004",
+      "name": "Write Script File"
+    },
+    {
+      "parameters": {
+        "executeOnce": true,
+        "command": "=find /tmp -maxdepth 1 -name 'ibo-*-out.mp4' -mmin +180 -delete 2>/dev/null\npython3 /usr/local/bin/render_ibo.py /tmp/ibo-{{ $execution.id }}-script.json /tmp/ibo-{{ $execution.id }}-out.mp4 /tmp/ibo-{{ $execution.id }}-voice.mp3\nrm -f /tmp/ibo-{{ $execution.id }}-script.json /tmp/ibo-{{ $execution.id }}-voice.mp3"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        1552,
+        -200
+      ],
+      "id": "ibo0000-rnd0-4000-8000-000000000005",
+      "name": "Render Local"
+    },
+    {
+      "parameters": {
+        "filePath": "=/tmp/ibo-{{ $execution.id }}-out.mp4",
+        "dataPropertyName": "video"
+      },
+      "type": "n8n-nodes-base.readBinaryFile",
+      "typeVersion": 1,
+      "position": [
+        1732,
+        -200
+      ],
+      "id": "ibo0000-rdv0-4000-8000-000000000006",
+      "name": "Read Video"
     }
   ],
   "connections": {
@@ -253,29 +323,7 @@
       "main": [
         [
           {
-            "node": "Render Video",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Render Video": {
-      "main": [
-        [
-          {
-            "node": "Download Video",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Download Video": {
-      "main": [
-        [
-          {
-            "node": "Build Caption",
+            "node": "Generate Voiceover",
             "type": "main",
             "index": 0
           }
@@ -298,6 +346,72 @@
         [
           {
             "node": "Post to Telegram Channel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Voiceover": {
+      "main": [
+        [
+          {
+            "node": "Write Voice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write Voice": {
+      "main": [
+        [
+          {
+            "node": "Prepare Script File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Script File": {
+      "main": [
+        [
+          {
+            "node": "Write Script File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write Script File": {
+      "main": [
+        [
+          {
+            "node": "Render Local",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Render Local": {
+      "main": [
+        [
+          {
+            "node": "Read Video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Video": {
+      "main": [
+        [
+          {
+            "node": "Build Caption",
             "type": "main",
             "index": 0
           }

@@ -54,7 +54,11 @@ Telegram / Webhook (тема) / RSS-новости
 - `EPICSTAR_RSS_CONTENT_ENGINE` — часовой RSS-движок (HN frontpage) с
   дедупликацией через static data
 - `IBO_VIDEO_PIPELINE` — видео-пайплайн: расписание каждые 3 часа → RSS →
-  Claude → рендер → видео в Telegram-канал
+  Claude (виральный сценарий по сценам + текст озвучки) → ElevenLabs (голос)
+  → локальный рендер `scripts/render_ibo.py` (карточки 1080×1920, кроссфейды,
+  кен-бёрнс, голос единым слоем) → пост в Telegram-канал с описанием,
+  хештегами и ссылками «Ещё по теме» из той же рубрики. Бренд и аккаунты —
+  `assets/ibo-brand.json`; пример сценария — `scripts/examples/`
 - `EPICSTAR_ERROR_HANDLER` — перехват ошибок всех workflow (errorTrigger) +
   уведомление в Telegram
 - `EPICSTAR_AI_DRAFT_APPROVAL`, `QUOTA-CMD - Webhook`, `n8n-MCP-Server` и др.

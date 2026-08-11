@@ -75,7 +75,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({model: \"claude-sonnet-5\", max_tokens: 4000, system: \"Ты — сценарист сети ИНТЕРНЕТ БЕЗ ОГРАНИЧЕНИЙ (VPN, приватность, обход блокировок). Основная точка входа: Telegram-канал @INTERNET_BEZ_GRANIC_RUS. Бренд: чёрно-жёлтая палитра, щит и замок. Тон уверенный, слегка тревожный, без лжи и кликбейта. Формат — текстовая инфографика. Каждый блок — короткая фраза до 90 символов, читабельная на слайде. Ответь СТРОГО валидным JSON без markdown-обёртки с полями: hook (string, до 80 симв), blocks (array из 3-4 строк), cta (string, до 60 симв, зови в Telegram-канал), tiktok_caption (string, до 150 симв с эмодзи)\", messages: [{role: \"user\", content: \"Тема ролика: \" + $json.topic}]}) }}",
+        "jsonBody": "={{ JSON.stringify({model: \"claude-sonnet-5\", max_tokens: 4000, system: \"Ты — сценарист сети ИНТЕРНЕТ БЕЗ ОГРАНИЧЕНИЙ (VPN, приватность, обход блокировок). Основная точка входа: Telegram-канал @INTERNET_BEZ_GRANIC_RUS. Бренд: чёрно-жёлтая палитра, щит и замок. Тон уверенный, слегка тревожный, без лжи и кликбейта. Формат — текстовая инфографика. Каждый блок — короткая фраза до 90 символов, читабельная на слайде. Ответь СТРОГО валидным JSON без markdown-обёртки с полями: hook (string, до 80 симв), blocks (array из 3-4 строк), cta (string, до 60 симв, зови в Telegram-канал), tiktok_caption (string, до 150 симв с эмодзи), category (string, ровно одно из: vpn, privacy, leaks, scam, digest — тематическая рубрика ролика), description (string, до 300 симв, 2-3 предложения для описания поста, без хештегов), hashtags (array из 4-6 строк, каждая начинается с #, микс кириллицы и латиницы по теме)\", messages: [{role: \"user\", content: \"Тема ролика: \" + $json.topic}]}) }}",
         "options": {
           "timeout": 120000
         }
@@ -99,7 +99,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const msg = $input.first().json;\nconst content = Array.isArray(msg.content) ? msg.content : [];\nconst textBlock = content.find(b => b.type === 'text') || content[content.length - 1];\nconst raw = (textBlock && textBlock.text ? textBlock.text : '').trim();\nconst clean = raw.replace(/^```json/, '').replace(/```$/, '').trim();\nconst parsed = JSON.parse(clean);\nif (!parsed.hook || !Array.isArray(parsed.blocks) || !parsed.blocks.length) throw new Error('Claude вернул ответ без hook/blocks');\nparsed.topic = $('Format Topic').first().json.topic;\nreturn [{ json: parsed }];"
+        "jsCode": "const msg = $input.first().json;\nconst content = Array.isArray(msg.content) ? msg.content : [];\nconst textBlock = content.find(b => b.type === 'text') || content[content.length - 1];\nconst raw = (textBlock && textBlock.text ? textBlock.text : '').trim();\nconst clean = raw.replace(/^```json/, '').replace(/```$/, '').trim();\nconst parsed = JSON.parse(clean);\nif (!parsed.hook || !Array.isArray(parsed.blocks) || !parsed.blocks.length) throw new Error('Claude вернул ответ без hook/blocks');\nconst ALLOWED = ['vpn', 'privacy', 'leaks', 'scam', 'digest'];\nif (!ALLOWED.includes(parsed.category)) parsed.category = 'digest';\nif (typeof parsed.description !== 'string' || !parsed.description.trim()) parsed.description = parsed.hook;\nif (!Array.isArray(parsed.hashtags)) parsed.hashtags = [];\nparsed.hashtags = parsed.hashtags.filter(t => typeof t === 'string' && t.startsWith('#')).slice(0, 6);\nif (!parsed.hashtags.length) parsed.hashtags = ['#интернетбезограничений', '#приватность', '#vpn'];\nparsed.topic = $('Format Topic').first().json.topic;\nreturn [{ json: parsed }];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -158,7 +158,7 @@
         "binaryData": true,
         "binaryPropertyName": "video",
         "additionalFields": {
-          "caption": "={{ $('Parse Script').first().json.tiktok_caption }}👉 Полный гайд: t.me/INTERNET_BEZ_GRANIC_RUS"
+          "caption": "={{ $json.caption }}"
         }
       },
       "type": "n8n-nodes-base.telegram",
@@ -187,8 +187,21 @@
         0
       ],
       "parameters": {
-        "jsCode": "const sd = $getWorkflowStaticData('global');\nconst cid = $('Format Topic').first().json.content_id;\nsd.lastContentId = cid;\nreturn [{ json: { marked: cid } }];"
+        "jsCode": "const sd = $getWorkflowStaticData('global');\nconst cid = $('Format Topic').first().json.content_id;\nsd.lastContentId = cid;\n// история публикаций по рубрикам — для блока «Ещё по теме» в следующих постах\nconst s = $('Parse Script').first().json;\nconst msg = $input.first().json.result || $input.first().json;\nconst chat = msg.chat || {};\nlet url = null;\nif (msg.message_id) {\n  url = chat.username\n    ? `https://t.me/${chat.username}/${msg.message_id}`\n    : `https://t.me/c/${String(chat.id || '').replace('-100', '')}/${msg.message_id}`;\n}\nif (url) {\n  sd.categoryPosts = sd.categoryPosts || {};\n  const list = sd.categoryPosts[s.category] || [];\n  list.unshift({ title: s.hook, url });\n  sd.categoryPosts[s.category] = list.slice(0, 3);\n}\nreturn [{ json: { marked: cid, category: s.category, posted: url } }];\n"
       }
+    },
+    {
+      "parameters": {
+        "jsCode": "const sd = $getWorkflowStaticData('global');\nconst s = $('Parse Script').first().json;\nconst prev = (sd.categoryPosts && sd.categoryPosts[s.category]) || [];\nconst lines = [s.description, '', s.hashtags.join(' ')];\nif (prev.length) {\n  lines.push('', '▶ Ещё по теме:');\n  for (const p of prev) lines.push(`• ${p.title} — ${p.url}`);\n}\nlines.push('', '👉 Полный гайд: t.me/INTERNET_BEZ_GRANIC_RUS');\nconst item = $input.first();\nreturn [{ json: { ...item.json, caption: lines.join('\\n') }, binary: item.binary }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1144,
+        180
+      ],
+      "id": "b1dca9f0-77ca-4f1e-9c2e-ibo0000cap01",
+      "name": "Build Caption"
     }
   ],
   "connections": {
@@ -262,7 +275,7 @@
       "main": [
         [
           {
-            "node": "Post to Telegram Channel",
+            "node": "Build Caption",
             "type": "main",
             "index": 0
           }
@@ -274,6 +287,17 @@
         [
           {
             "node": "Mark Processed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Caption": {
+      "main": [
+        [
+          {
+            "node": "Post to Telegram Channel",
             "type": "main",
             "index": 0
           }

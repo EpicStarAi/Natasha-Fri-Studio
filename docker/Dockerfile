@@ -25,7 +25,8 @@ COPY assets/bg.jpg /home/node/assets/bg.jpg
 # чтобы публикации не падали с непонятным 401 Unauthorized.
 COPY docker/entrypoint.sh /docker-entrypoint-bootstrap.sh
 COPY docker/validate-telegram.sh /docker/validate-telegram.sh
-RUN chmod +x /docker-entrypoint-bootstrap.sh /docker/validate-telegram.sh
+COPY docker/validate-platforms.sh /docker/validate-platforms.sh
+RUN chmod +x /docker-entrypoint-bootstrap.sh /docker/validate-telegram.sh /docker/validate-platforms.sh
 ENTRYPOINT ["tini", "--", "/docker-entrypoint-bootstrap.sh"]
 
 USER node

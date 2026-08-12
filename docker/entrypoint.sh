@@ -70,4 +70,8 @@ import_credential w6kgstKycA9LjEKZ "OpenAI Bearer Token" httpBearerAuth token OP
 
 echo "== bootstrap done =="
 
+# Проверка токенов платформ (TikTok/Instagram/YouTube) — понятные ошибки
+# вместо 401/403 в публикациях. n8n стартует в любом случае.
+/docker/validate-platforms.sh || true
+
 exec /docker-entrypoint.sh "$@"

@@ -212,6 +212,19 @@
       ],
       "id": "fca5cca5-9594-421b-99db-94f1c62eec60",
       "name": "Switch"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Проверка Telegram-бота перед отправкой (понятная ошибка вместо 401 Unauthorized)\nconst token = $env.TELEGRAM_BOT_TOKEN;\nif (token && token.trim()) {\n  let body;\n  try {\n    body = await this.helpers.httpRequest({\n      method: 'GET',\n      url: 'https://api.telegram.org/bot' + token.trim() + '/getMe',\n    });\n  } catch (e) {\n    throw new Error(\n      'Telegram-бот недоступен: ' + (e && e.message ? e.message : String(e)) +\n      ' — проверьте токен у @BotFather и перезапустите задачу'\n    );\n  }\n  if (!body.ok) {\n    throw new Error(\n      'Telegram-бот не отвечает (getMe ' + (body.error_code || 'unknown') + '): ' +\n      (body.description || 'токен недействителен или отозван — перевыпустите у @BotFather')\n    );\n  }\n}\n// Если TELEGRAM_BOT_TOKEN не задан — авторизация идёт через n8n-credential, проверку пропускаем\nreturn $input.all();"
+      },
+      "id": "check-bot",
+      "name": "Check Bot",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        300
+      ]
     }
   ],
   "connections": {
@@ -230,7 +243,7 @@
       "main": [
         [
           {
-            "node": "Switch",
+            "node": "Check Bot",
             "type": "main",
             "index": 0
           }
@@ -289,6 +302,17 @@
         [
           {
             "node": "Respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Bot": {
+      "main": [
+        [
+          {
+            "node": "Switch",
             "type": "main",
             "index": 0
           }

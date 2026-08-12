@@ -113,9 +113,12 @@ Images (Alpine)» — в нём удалены `apk` и `curl`, а ffmpeg отс
 
 Перед публикацией токен проверяется `docker/validate-telegram.sh` (getMe):
 при пустом или недействительном токене скрипт вернёт понятную ошибку
-(exit 1/2) вместо 401 Unauthorized. В compose-стеке проверка выполняется
-автоматически при старте n8n (`docker/entrypoint.sh`); для standalone-скриптов
-публикации вызывайте валидатор первым шагом.
+(exit 1/2) вместо 401 Unauthorized. Аналогично для платформ —
+`docker/validate-platforms.sh` (TikTok через Content Posting API,
+Instagram через Graph API, YouTube через проверку OAuth2-credential в n8n)
+с понятными ошибками вместо 401/403/OAuthException. В compose-стеке обе
+проверки выполняются автоматически при старте n8n (`docker/entrypoint.sh`);
+для standalone-скриптов публикации вызывайте валидатор первым шагом.
 
 По умолчанию публикация приватная (`YOUTUBE_PRIVACY=private`,
 `TIKTOK_PRIVACY_LEVEL=SELF_ONLY`) — безопасно для тестирования.
@@ -170,6 +173,52 @@ pnpm run build                                # typecheck + сборка все�
 `pnpm-workspace.yaml` включает защиту от supply-chain атак:
 `minimumReleaseAge: 1440` — пакеты npm принимаются только после суток с
 публикации (исключение — доверенные `@replit/*`). Не отключай без нужды.
+
+## 3. Публичный деплой (freerus.site)
+
+Платформа опубликована через **Cloudflare Tunnel** (машина за NAT, без
+публичного IP). Домен остаётся на nameserver'ах GoDaddy.
+
+### Архитектура
+
+```
+freerus.site / www.freerus.site (GoDaddy DNS)
+        │  CNAME www → 93555471-…-d9000a01ca24.cfargotunnel.com
+        ▼
+Cloudflare edge (SSL) ── туннель cloudflared ──► localhost:5173  (Vite, фронт)
+                                    └──────────► localhost:5000  (api-server, /api/*)
+```
+
+### Что нужно запущено на машине
+
+| Процесс | Порт | Запуск |
+|---|---|---|
+| Vite (natasha-fri) | 5173 | `cd artifacts/natasha-fri && PORT=5173 BASE_PATH=/ pnpm dev` |
+| api-server | 5000 | `pnpm --filter @workspace/api-server run dev` |
+| cloudflared (туннель) | — | `cloudflared tunnel run natasha-fri` (конфиг `~/.cloudflared/config.yml`) |
+
+Туннель создан под аккаунтом Cloudflare (сертификат `~/.cloudflared/cert.pem`),
+ID туннеля: `93555471-d664-4978-9caf-d9000a01ca24`. Ingress в
+`~/.cloudflared/config.yml`: `freerus.site`/`www.freerus.site` → 5173,
+`/api/*` → 5000.
+
+### Записи DNS (GoDaddy, freerus.site)
+
+| Тип | Имя | Дані | Назначение |
+|---|---|---|---|
+| CNAME | www | `93555471-…cfargotunnel.com` | живой деплой |
+| CNAME | _domainconnect | `_domainconnect.gd.domaincontrol.com.` | дефолт GoDaddy |
+| TXT | _dmarc | DMARC | дефолт GoDaddy |
+| NS | @ | `ns25/ns26.domaincontrol.com` | nameserver'ы GoDaddy (не менять) |
+
+### Статус (2026-08-12)
+
+- ✅ `https://www.freerus.site` — 200, SSL от Cloudflare, «НАТАША ФРИ RUS»
+- ✅ `/api/*` через туннель маршрутизируется на api-server (5000)
+- ⏳ `freerus.site` (корень) — **NXDOMAIN**: GoDaddy не даёт CNAME на apex,
+  редирект через вкладку **«Переадресація» (Forwarding)** ещё не создан.
+  Шаг: GoDaddy → freerus.site → Переадресація → `freerus.site →
+  https://www.freerus.site` (301). GoDaddy сам создаст нужную A-запись.
 
 ---
 

@@ -53,6 +53,8 @@ services:
       - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - N8N_MCP_AUTH_TOKEN=${N8N_MCP_AUTH_TOKEN}
+      # Разрешаем Code-нодам читать env (нужно Check Bot в Telegram-автопосте)
+      - N8N_BLOCK_ENV_ACCESS_IN_NODE=false
       - YOUTUBE_PRIVACY=${YOUTUBE_PRIVACY:-private}
       - NATASHA_BG_IMAGE=${NATASHA_BG_IMAGE:-/home/node/assets/bg.jpg}
     volumes:

@@ -6,14 +6,22 @@
 # версии совместимы) и кладём в финальный образ.
 
 FROM alpine:3.23 AS builder
-RUN apk add --no-cache ffmpeg curl
+RUN apk add --no-cache ffmpeg curl python3 py3-pillow font-dejavu
 
 FROM docker.n8n.io/n8nio/n8n:latest
 
 USER root
 # Бинарники + все разделяемые библиотеки (libav*, libcurl, libssl, libstdc++ и т.д.)
+# python3 + Pillow (stdlib и site-packages лежат в /usr/lib) — для локального
+# рендерера роликов; font-dejavu — кириллический шрифт для слайдов
 COPY --from=builder /usr/bin/ffmpeg /usr/bin/ffprobe /usr/bin/curl /usr/bin/
+COPY --from=builder /usr/bin/python3* /usr/bin/
 COPY --from=builder /usr/lib/ /usr/lib/
+COPY --from=builder /usr/share/fonts/ /usr/share/fonts/
+
+# Локальный рендерер IBO-роликов (вызывается нодой Render Local
+# в IBO_VIDEO_PIPELINE вместо внешнего сервиса renderer:8080)
+COPY scripts/render_ibo.py /usr/local/bin/render_ibo.py
 
 # Фоновое изображение НАТАШИ, которое workflow подставляет под озвучку
 # (путь можно переопределить переменной NATASHA_BG_IMAGE)

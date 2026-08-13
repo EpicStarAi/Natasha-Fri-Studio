@@ -36,6 +36,9 @@ services:
       - N8N_HOST=localhost
       - N8N_PORT=5678
       - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY:-natasha_dev_encryption_key}
+      # n8n 2.x отключает executeCommand по умолчанию (breaking change 2.0),
+      # а нода Merge Video без него не работает — включаем обратно.
+      - NODES_EXCLUDE=[]
       # === Пайплайн: ключи API ===
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4o-mini}
@@ -59,6 +62,9 @@ services:
       - NATASHA_BG_IMAGE=${NATASHA_BG_IMAGE:-/home/node/assets/bg.jpg}
     volumes:
       - n8n_data:/home/node/.n8n
+      # read-only монтирование workflow для автоимпорта (scripts/deploy.sh)
+      - ./n8n-workflows:/import/workflows:ro
+      - ./natasha-workflow.json:/import/natasha-workflow.json:ro
     depends_on:
       postgres:
         condition: service_healthy

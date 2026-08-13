@@ -1,0 +1,19 @@
+{
+  "brand": "ИНТЕРНЕТ БЕЗ ОГРАНИЧЕНИЙ RUS",
+  "telegram": "@INTERNET_BEZ_GRANIC_RUS",
+  "telegram_url": "https://t.me/INTERNET_BEZ_GRANIC_RUS",
+  "accounts": {
+    "tiktok": "https://www.tiktok.com/@.bez.o",
+    "instagram": "https://www.instagram.com/internet_bez_granic_rus",
+    "youtube": "https://youtube.com/@internetbezogranicheniy",
+    "facebook": "https://www.facebook.com/share/1BWLgj5PjJ/",
+    "pinterest": "https://pin.it/1JuNCKdNW"
+  },
+  "email": "internetbezogranicheniy@gmail.com",
+  "cta_per_platform": {
+    "telegram": "Подпишись на @INTERNET_BEZ_GRANIC_RUS",
+    "tiktok": "Подпишись — ссылка на Telegram в профиле",
+    "instagram": "Подпишись — ссылка на Telegram в профиле",
+    "youtube": "Подпишись, Telegram — в описании"
+  }
+}

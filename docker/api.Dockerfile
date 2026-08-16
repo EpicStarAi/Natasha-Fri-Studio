@@ -1,4 +1,4 @@
-FROM node:24-alpine AS build
+FROM node:24-bookworm-slim AS build
 
 WORKDIR /app
 RUN corepack enable
@@ -10,7 +10,7 @@ COPY lib ./lib
 RUN pnpm install --frozen-lockfile
 RUN pnpm --filter @workspace/api-server build
 
-FROM node:24-alpine
+FROM node:24-bookworm-slim
 WORKDIR /app
 ENV NODE_ENV=production
 COPY --from=build /app/artifacts/api-server/dist ./dist

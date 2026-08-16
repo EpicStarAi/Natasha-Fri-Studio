@@ -1,0 +1,44 @@
+services:
+  web-db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: natasha
+      POSTGRES_USER: natasha
+      POSTGRES_PASSWORD: ${WEB_DB_PASSWORD:?WEB_DB_PASSWORD is required}
+    volumes:
+      - web_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U natasha -d natasha"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: docker/api.Dockerfile
+    restart: unless-stopped
+    environment:
+      PORT: 5000
+      DATABASE_URL: postgresql://natasha:${WEB_DB_PASSWORD}@web-db:5432/natasha
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      LEMLIST_CLIENT_ID: ${LEMLIST_CLIENT_ID:-}
+      LEMLIST_CLIENT_SECRET: ${LEMLIST_CLIENT_SECRET:-}
+      LEMLIST_REDIRECT_URI: ${LEMLIST_REDIRECT_URI:-}
+    depends_on:
+      web-db:
+        condition: service_healthy
+
+  web:
+    build:
+      context: .
+      dockerfile: docker/web.Dockerfile
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5173:80"
+    depends_on:
+      - api
+
+volumes:
+  web_postgres_data:

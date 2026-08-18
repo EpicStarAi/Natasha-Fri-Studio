@@ -53,7 +53,47 @@
 }
 
 :root {
-  /* Forced dark theme always */
+  --background: 36 33% 97%;
+  --foreground: 228 18% 13%;
+
+  --card: 0 0% 100%;
+  --card-foreground: 228 18% 13%;
+  --card-border: 30 16% 84%;
+
+  --popover: 0 0% 100%;
+  --popover-foreground: 228 18% 13%;
+  --popover-border: 30 16% 84%;
+
+  --primary: 15 90% 52%;
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 35 90% 48%;
+  --secondary-foreground: 0 0% 100%;
+
+  --muted: 30 18% 91%;
+  --muted-foreground: 225 9% 42%;
+
+  --accent: 15 90% 52%;
+  --accent-foreground: 0 0% 100%;
+
+  --destructive: 0 84% 52%;
+  --destructive-foreground: 0 0% 98%;
+
+  --border: 30 16% 84%;
+  --input: 30 16% 84%;
+  --ring: 15 90% 52%;
+
+  --app-font-sans: 'Inter', sans-serif;
+  --app-font-serif: 'Playfair Display', serif;
+  --app-font-mono: 'JetBrains Mono', monospace;
+  --app-font-condensed: 'Oswald', sans-serif;
+
+  --radius: 0;
+
+  color-scheme: light;
+}
+
+:root.dark {
   --background: 240 10% 4%;
   --foreground: 0 0% 95%;
 
@@ -157,6 +197,42 @@
     linear-gradient(to right, rgba(255,255,255,0.02) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(255,255,255,0.02) 1px, transparent 1px);
   background-size: 40px 40px;
+}
+
+:root:not(.dark) .canvas-bg {
+  background-image:
+    linear-gradient(to right, rgba(24, 26, 34, 0.055) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(24, 26, 34, 0.055) 1px, transparent 1px);
+}
+
+/* Адаптация прежних тёмных утилит к светлой теме. */
+:root:not(.dark) [class*="bg-[#050506]"],
+:root:not(.dark) [class*="bg-[#0a0a0c]"] {
+  background-color: hsl(var(--background)) !important;
+}
+
+:root:not(.dark) .text-white,
+:root:not(.dark) .text-white\/80,
+:root:not(.dark) .text-white\/50 {
+  color: hsl(var(--foreground)) !important;
+}
+
+:root:not(.dark) [class*="border-white/"] {
+  border-color: hsl(var(--border)) !important;
+}
+
+:root:not(.dark) [class*="bg-white/"] {
+  background-color: hsl(var(--muted)) !important;
+}
+
+:root:not(.dark) [class*="bg-black/"] {
+  background-color: color-mix(in srgb, hsl(var(--card)) 88%, transparent) !important;
+}
+
+:root:not(.dark) .bg-primary.text-white,
+:root:not(.dark) .bg-blue-600.text-white,
+:root:not(.dark) .bg-red-600.text-white {
+  color: #fff !important;
 }
 
 /* Scrollbar hiding for canvas */

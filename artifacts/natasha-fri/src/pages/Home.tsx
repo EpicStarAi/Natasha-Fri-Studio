@@ -19,7 +19,7 @@ export default function Home() {
 
   return (
     <AppStateProvider>
-      <div className="w-full h-[100dvh] overflow-hidden bg-[#050506] text-white">
+      <div className="w-full h-[100dvh] overflow-hidden bg-background text-foreground transition-colors duration-300">
         <Toolbar />
         {isMobile ? <MobileStack /> : <DesktopCanvas />}
         <SubscriptionModal />

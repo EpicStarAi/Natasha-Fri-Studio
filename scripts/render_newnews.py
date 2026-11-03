@@ -17,7 +17,7 @@ import sys
 from urllib.parse import urlsplit
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from news_windows import validate_windows, render_scene
+from news_windows import validate_windows, render_scene, normalize_news_audio
 
 IMAGES = {'.jpg', '.jpeg', '.png', '.webp'}
 VIDEOS = {'.mp4', '.mov', '.webm', '.mkv'}
@@ -163,6 +163,10 @@ def render(manifest, root, output, check_only=False):
         listing.write_text(''.join(f"file '{part.name}'\n" for part in parts), encoding='utf-8')
         final = working / 'final.mp4'
         run(base + ['-f', 'concat', '-safe', '1', '-i', str(listing), '-map', '0:v:0', '-map', '0:a:0', '-c:v', 'copy', '-af', 'aresample=async=1:first_pts=0', '-c:a', 'aac', '-ar', '48000', '-ac', '2', '-b:a', '192k', '-movflags', '+faststart', str(final)])
+        if any(scene.get('windows') for scene in pack['scenes']):
+            normalized = working / 'normalized.mp4'
+            report['audio'] = normalize_news_audio(final, normalized)
+            final = normalized
         info = probe(final)
         video = next(s for s in info['streams'] if s['codec_type'] == 'video')
         actual = float(info['format']['duration'])
@@ -186,7 +190,7 @@ def main():
     args = parser.parse_args()
     try:
         render(args.manifest, args.assets, args.output, args.check)
-    except (ValueError, OSError, KeyError, TypeError, subprocess.TimeoutExpired) as error:
+    except (ValueError, OSError, KeyError, TypeError, subprocess.TimeoutExpired, subprocess.CalledProcessError) as error:
         parser.exit(1, f'NEW NEWS: {error}\n')
 
 

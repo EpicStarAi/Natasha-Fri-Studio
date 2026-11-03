@@ -724,7 +724,7 @@ export default function Newsroom() {
             </section>
             <aside className="nn-preview-panel" aria-label="Макет видео">
               <div className="nn-section-title">
-                <span>МАКЕТ КАДРА</span>
+                <span>ПРЕДПРОСМОТР</span>
                 <span>1080 × 1920</span>
               </div>
               <NewsWindowPreview scene={scene} />

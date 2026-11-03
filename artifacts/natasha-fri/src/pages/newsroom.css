@@ -1011,6 +1011,21 @@
 }
 
 /* Timed windows match the 1080x1920 render geometry. */
+.nn-preview-panel {
+  align-self: start;
+  position: sticky;
+  top: 22px;
+}
+@media (max-width: 600px) {
+  .nn-preview-panel {
+    position: static;
+    align-self: stretch;
+    order: -1;
+  }
+  .nn-live-frame {
+    width: min(100%, 300px);
+  }
+}
 .nn-live-frame {
   container-type: inline-size;
 }
@@ -1054,7 +1069,7 @@
   padding: 0.8cqw 1cqw;
 }
 .nn-cue-label {
-  font-size: 1.6cqw;
+  font-size: 1.85cqw;
   font-weight: 700;
   line-height: 2.7cqw;
   text-transform: uppercase;
@@ -1082,7 +1097,7 @@
   overflow-wrap: anywhere;
 }
 .nn-cue-credit {
-  font-size: 1.45cqw;
+  font-size: 2.03cqw;
   line-height: 3.2cqw;
   white-space: nowrap;
   overflow: hidden;

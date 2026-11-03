@@ -1,5 +1,8 @@
 """Scene-relative editorial windows. Source media is muted; host stays intact."""
 import math
+import json
+import re
+import subprocess
 from pathlib import Path
 from urllib.parse import urlsplit
 
@@ -85,8 +88,8 @@ def draw_graphics(folder, windows):
         d.line((2, 26, 2, 255), fill='#ff0055', width=5)
         d.rectangle((12, 40, 367, 239), fill=(0, 0, 0, 0))
         label = item['label'].upper()
-        d.text((14, 10), label, font=fit(d, label, 18, 13, True), fill='#f0f4f8')
-        d.text((14, 251), item['credit'], font=fit(d, item['credit'], 17, 12), fill='#cbd4e6')
+        d.text((14, 10), label, font=fit(d, label, 20, 16, True), fill='#f0f4f8')
+        d.text((14, 251), item['credit'], font=fit(d, item['credit'], 22, 18), fill='#cbd4e6')
         face = font(30, True); lines = ['']
         for word in item['headline'].upper().split():
             candidate = (lines[-1]+' '+word).strip()
@@ -122,3 +125,27 @@ def render_scene(host, windows, seconds, output, working, run, normalize, encode
         previous = f'v{index}'
     args += ['-filter_complex', ';'.join(filters), '-map', f'[{previous}]', '-map', '0:a:0', '-af', 'asetpts=PTS-STARTPTS,apad']
     run(args + encode_args(seconds, output))
+
+
+def normalize_news_audio(source, destination):
+    """Two-pass delivery loudness; original voice and GPU source stay unchanged."""
+    base = ['ffmpeg', '-hide_banner', '-nostdin', '-y']
+    result = subprocess.run(base + ['-i', str(source), '-map', '0:a:0', '-af',
+        'loudnorm=I=-16:TP=-1.5:LRA=7:print_format=json', '-f', 'null', '-'],
+        capture_output=True, text=True, timeout=600, check=True)
+    matches = re.findall(r'\{\s*"input_i".*?\}', result.stderr, re.S)
+    if not matches:
+        raise ValueError('Не удалось измерить громкость речи')
+    measurement = json.loads(matches[-1])
+    keys = ['input_i', 'input_tp', 'input_lra', 'input_thresh', 'target_offset']
+    if any(not math.isfinite(float(measurement[key])) for key in keys):
+        raise ValueError('Речь слишком тихая или отсутствует; проверьте озвучку')
+    audio_filter = ('loudnorm=I=-16:TP=-1.5:LRA=7:linear=true:'
+        f'measured_I={measurement["input_i"]}:measured_TP={measurement["input_tp"]}:'
+        f'measured_LRA={measurement["input_lra"]}:measured_thresh={measurement["input_thresh"]}:'
+        f'offset={measurement["target_offset"]}')
+    subprocess.run(base + ['-loglevel', 'error', '-i', str(source), '-map', '0:v:0',
+        '-map', '0:a:0', '-c:v', 'copy', '-af', audio_filter, '-c:a', 'aac',
+        '-b:a', '192k', '-ar', '48000', '-ac', '2', '-movflags', '+faststart', str(destination)],
+        capture_output=True, text=True, timeout=600, check=True)
+    return {'targetLufs': -16, 'truePeakLimitDbtp': -1.5, 'inputLufs': float(measurement['input_i'])}

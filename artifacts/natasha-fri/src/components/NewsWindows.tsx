@@ -133,7 +133,11 @@ export function NewsWindowEditor({
       <button
         type="button"
         className="nn-secondary"
-        disabled={windows.length >= 12}
+        disabled={
+          windows.length >= 12 ||
+          Math.max(0, ...windows.map((w) => w.endSeconds)) >
+            scene.durationSeconds - 0.5
+        }
         onClick={() => {
           const start = Math.max(0, ...windows.map((w) => w.endSeconds));
           onChange([
@@ -216,7 +220,16 @@ export function NewsWindowPreview({ scene }: { scene: Scene }) {
     setActualDuration(null);
   }, [scene.id, hostMedia?.url]);
   useEffect(() => {
-    if (!playing || hostMedia) return;
+    if (!playing) return;
+    if (hostMedia) {
+      let frame: number;
+      const tick = () => {
+        if (host.current) setTime(host.current.currentTime);
+        frame = requestAnimationFrame(tick);
+      };
+      frame = requestAnimationFrame(tick);
+      return () => cancelAnimationFrame(frame);
+    }
     const timer = window.setInterval(
       () =>
         setTime((t) => {

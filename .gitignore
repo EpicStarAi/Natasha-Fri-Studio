@@ -64,6 +64,7 @@ Thumbs.db
 /renders/
 __pycache__/
 *.pyc
+/.venv-render/
 
 # Windows
 Desktop.ini

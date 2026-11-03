@@ -42,7 +42,9 @@ After=network.target
 [Service]
 Type=simple
 WorkingDirectory={str(repo).replace('%', '%%')}
-EnvironmentFile={quote(env)}
+Environment=HOST=127.0.0.1 PORT={port} ENABLE_LEMLIST=false
+EnvironmentFile={str(env).replace('%', '%%')}
+ExecStartPre=/usr/bin/test -r {quote(env)}
 ExecStart={quote(node)} --enable-source-maps {quote(repo / 'artifacts/api-server/dist/index.mjs')}
 Restart=on-failure
 RestartSec=5
@@ -63,7 +65,7 @@ WantedBy=default.target
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--repo', type=Path, default=Path(__file__).resolve().parents[1])
-    parser.add_argument('--port', type=int, default=8788)
+    parser.add_argument('--port', type=int, default=17888)
     args = parser.parse_args()
     if not 1024 <= args.port <= 65535:
         parser.error('Use an unprivileged port between 1024 and 65535')

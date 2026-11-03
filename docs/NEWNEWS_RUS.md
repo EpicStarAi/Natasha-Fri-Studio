@@ -78,7 +78,7 @@ python3 scripts/install_newnews_local.py
 systemctl --user status newnews-rus-studio.service
 ```
 
-Студия и API работают одним процессом на `http://127.0.0.1:8788`.
+Студия и API работают одним процессом на `http://127.0.0.1:17888`.
 Сервис слушает только localhost, запускается при старте пользовательского systemd.
 Запуск WSL при включении Windows настраивается отдельно. Порт можно изменить
 через `--port`. Сервис не меняет другие студии, процессы OpenSpline или n8n.

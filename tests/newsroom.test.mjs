@@ -85,6 +85,7 @@ async function start(extra) {
     PORT: String(port),
     NODE_ENV: "production",
     NEWNEWS_DATA_DIR: directory,
+    NEWNEWS_WEB_DIR: path.resolve("artifacts/natasha-fri/dist/public"),
     ...extra,
   };
   const process_ = spawn(
@@ -139,6 +140,15 @@ test("API starts without Postgres and reports configuration, not fake render rea
   assert.equal(data.rendering, "manual-local");
   assert.equal(data.publishing, "not-connected");
   assert.equal(JSON.stringify(data).includes(token), false);
+});
+
+test("local single-process server serves the studio and keeps API misses as JSON", async () => {
+  const web = await fetch(base.replace(/\/api$/, "/"));
+  assert.equal(web.status, 200);
+  assert.match(await web.text(), /NEW🌏NEWS🇷🇺RUS/);
+  const missing = await fetch(`${base}/unknown`);
+  assert.equal(missing.status, 404);
+  assert.match(missing.headers.get("content-type"), /application\/json/);
 });
 test("writes are disabled without a server token and rejected for invalid auth", async () => {
   assert.equal((await post(disabledBase, draft())).status, 503);

@@ -10,7 +10,6 @@ import {
   Link2,
   Moon,
   Plus,
-  Radio,
   Save,
   Settings2,
   Sun,
@@ -664,6 +663,11 @@ export default function Newsroom() {
                 <span>1080 × 1920</span>
               </div>
               <div className="nn-frame">
+                <img
+                  className="nn-approved-presenter"
+                  src={`${import.meta.env.BASE_URL}newnews/presenter-master.png`}
+                  alt="Утверждённая ведущая NEW NEWS за столом с микрофоном"
+                />
                 <div className="nn-frame-top">
                   <span>
                     NEW<span>🌏</span>NEWS
@@ -679,23 +683,13 @@ export default function Newsroom() {
                     {scene.headline || "Здесь появится визуальный контекст"}
                   </strong>
                 </div>
-                <div className="nn-presenter">
-                  <div className="nn-orbit" />
-                  <Radio size={32} strokeWidth={1} />
-                  <strong>Наша ведущая</strong>
-                  <p>
-                    Утверждённый образ
-                    <br />и русский голос
-                  </p>
-                  <span className="nn-asset-label">КЛИП ОЖИДАЕТСЯ</span>
-                </div>
                 <div className="nn-frame-footer">
                   <span>NEW🌏NEWS🇷🇺RUS</span>
                   <span>9:16</span>
                 </div>
               </div>
               <p className="nn-preview-caption">
-                Схема композиции. Это не сгенерированное видео.
+                Утверждённый образ. Статичный макет с карточкой темы слева.
               </p>
               <div className="nn-format-list">
                 <span>

@@ -1,11 +1,12 @@
 .newsroom {
-  --nn-bg: #101212;
-  --nn-panel: #171a1a;
-  --nn-raised: #1d2121;
-  --nn-ink: #f3f1eb;
-  --nn-muted: #9a9f9d;
-  --nn-line: #303636;
-  --nn-red: #ef614f;
+  --nn-bg: #030305;
+  --nn-panel: #0a0a0f;
+  --nn-raised: #12121a;
+  --nn-ink: #f0f4f8;
+  --nn-muted: #8892b0;
+  --nn-line: rgba(255, 255, 255, 0.1);
+  --nn-red: #ff0055;
+  --nn-cyan: #00ffff;
   min-height: 100dvh;
   background: var(--nn-bg);
   color: var(--nn-ink);
@@ -14,13 +15,14 @@
   font-size: 14px;
 }
 :root:not(.dark) .newsroom {
-  --nn-bg: #f2f1ec;
-  --nn-panel: #fbfaf6;
-  --nn-raised: #eeede6;
+  --nn-bg: #f3f4fa;
+  --nn-panel: #ffffff;
+  --nn-raised: #e9ebf4;
   --nn-ink: #1b2322;
   --nn-muted: #606d68;
   --nn-line: #d8dcd4;
-  --nn-red: #b7362a;
+  --nn-red: #bd164e;
+  --nn-cyan: #007b87;
 }
 .newsroom button,
 .newsroom input,
@@ -952,3 +954,20 @@
   width: 100%;
   background: #080912a6;
 }
+
+/* DEEP INSIDE tokens: EpicStarAi/deepinside-life web-deepinside/src/index.css. */
+.newsroom {
+  background-image: radial-gradient(circle at 70% 0%, rgba(0, 255, 255, .035), transparent 35%), radial-gradient(circle at 20% 60%, rgba(255, 0, 85, .025), transparent 35%);
+}
+.nn-sidebar { background: var(--nn-panel); }
+.nn-topbar { background: var(--nn-panel); }
+.nn-sidebar nav button { border-radius: 12px; }
+.nn-sidebar nav button.active { border-color: color-mix(in srgb, var(--nn-cyan) 28%, transparent); }
+.nn-sidebar nav button.active > svg:first-child { color: var(--nn-cyan); }
+.nn-brand > svg { color: var(--nn-cyan); }
+.nn-eyebrow { color: var(--nn-cyan); }
+.nn-heading h1 { font-weight: 700; letter-spacing: -.04em; }
+.nn-field input, .nn-field textarea, .nn-field select { border-radius: 12px; }
+.nn-field input:focus, .nn-field textarea:focus, .nn-field select:focus { border-color: var(--nn-cyan); }
+.nn-scene-tabs button.active { border-bottom-color: var(--nn-cyan); }
+.nn-deepinside-credit { margin-top: 14px; color: var(--nn-muted); font-size: 9px; letter-spacing: .12em; }

@@ -323,7 +323,7 @@ export default function Newsroom() {
         <main className="nn-main">
           <div className="nn-heading">
             <div>
-              <div className="nn-eyebrow">NEW NEWS / РУССКАЯ РЕДАКЦИЯ</div>
+              <div className="nn-eyebrow">DEEP INSIDE / NEW NEWS RUS</div>
               <h1>
                 {tab === "episode" ? (
                   <>

@@ -13,6 +13,8 @@ def quote(value):
 
 def install(repo, port):
     repo = repo.resolve()
+    if any(c in str(repo) + str(Path.home()) for c in '\r\n'):
+        raise ValueError('Paths cannot contain line breaks')
     node = shutil.which('node')
     if not node or not (repo / 'artifacts/api-server/dist/index.mjs').is_file() or not (repo / 'artifacts/natasha-fri/dist/public/index.html').is_file():
         raise ValueError('Run pnpm install --frozen-lockfile && pnpm run build first')
@@ -39,7 +41,7 @@ After=network.target
 
 [Service]
 Type=simple
-WorkingDirectory={quote(repo)}
+WorkingDirectory={str(repo).replace('%', '%%')}
 EnvironmentFile={quote(env)}
 ExecStart={quote(node)} --enable-source-maps {quote(repo / 'artifacts/api-server/dist/index.mjs')}
 Restart=on-failure
@@ -50,6 +52,7 @@ NoNewPrivileges=true
 [Install]
 WantedBy=default.target
 ''')
+    subprocess.run(['systemd-analyze', '--user', 'verify', str(units / 'newnews-rus-studio.service')], check=True)
     subprocess.run(['systemctl', '--user', 'daemon-reload'], check=True)
     subprocess.run(['systemctl', '--user', 'enable', 'newnews-rus-studio.service'], check=True)
     subprocess.run(['systemctl', '--user', 'restart', 'newnews-rus-studio.service'], check=True)

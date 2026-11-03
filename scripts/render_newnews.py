@@ -13,7 +13,11 @@ import re
 import shutil
 import subprocess
 import tempfile
+import sys
 from urllib.parse import urlsplit
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from news_windows import validate_windows, render_scene
 
 IMAGES = {'.jpg', '.jpeg', '.png', '.webp'}
 VIDEOS = {'.mp4', '.mov', '.webm', '.mkv'}
@@ -95,6 +99,7 @@ def plan_render(pack, root):
         broll = asset(root, scene['brollAsset'], IMAGES | VIDEOS) if scene.get('brollAsset') else None
         if broll and not any(s['codec_type'] == 'video' for s in probe(broll)['streams']):
             raise ValueError(f'{broll.name}: нет изображения')
+        validate_windows(scene, root, duration, asset, probe, IMAGES, VIDEOS)
         planned.append((host, broll, duration))
     total = 1 + sum(item[2] for item in planned)
     if total > 60:
@@ -137,6 +142,13 @@ def render(manifest, root, output, check_only=False):
         run(base + ['-loop', '1'] + input_args(intro) + ['-f', 'lavfi', '-i', 'anullsrc=r=48000:cl=stereo', '-map', '0:v:0', '-map', '1:a:0', '-vf', normalize(1080, 1920)] + encode_args(1, parts[0]))
         for index, (host, broll, seconds) in enumerate(planned, 1):
             part = working / f'part-{index:03d}.mp4'
+            windows = validate_windows(pack['scenes'][index-1], root, seconds, asset, probe, IMAGES, VIDEOS)
+            if windows:
+                scene_work = working / f'graphics-{index}'
+                scene_work.mkdir()
+                render_scene(host, windows, seconds, part, scene_work, run, normalize, encode_args, input_args, IMAGES)
+                parts.append(part)
+                continue
             args = base + input_args(host)
             if broll:
                 args += (['-loop', '1'] if broll.suffix.lower() in IMAGES else ['-stream_loop', '-1']) + input_args(broll)

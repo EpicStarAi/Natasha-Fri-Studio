@@ -36,22 +36,74 @@ const sourceUrl = z
     }
   }, "Источник должен быть HTTPS-ссылкой без пароля");
 
-export const NewsSceneSchema = z.object({
+export const NewsWindowSchema = z.object({
   id: z.string().regex(/^[a-zA-Z0-9-]{1,60}$/),
-  headline: z.string().trim().min(3, "Добавьте заголовок темы").max(120),
-  narration: z
-    .string()
-    .trim()
-    .min(20, "Добавьте текст для ведущей: минимум 20 символов")
-    .max(1500),
-  sourceUrls: z
-    .array(sourceUrl)
-    .min(1, "Добавьте хотя бы один источник для каждой темы")
-    .max(5),
-  durationSeconds: z.number().int().min(5).max(45),
-  presenterAsset: assetName,
-  brollAsset: z.union([assetName, z.literal("")]),
+  asset: assetName,
+  startSeconds: z.number().min(0).max(45),
+  endSeconds: z.number().min(0).max(45),
+  mediaStartSeconds: z.number().min(0).max(3600).default(0),
+  headline: z.string().trim().min(3).max(60),
+  label: z.string().trim().min(1).max(28),
+  credit: z.string().trim().min(1).max(42),
+  sourceUrl,
+  anchorText: z.string().trim().max(250).default(""),
 });
+export type NewsWindow = z.infer<typeof NewsWindowSchema>;
+
+export const NewsSceneSchema = z
+  .object({
+    id: z.string().regex(/^[a-zA-Z0-9-]{1,60}$/),
+    headline: z.string().trim().min(3, "Добавьте заголовок темы").max(120),
+    narration: z
+      .string()
+      .trim()
+      .min(20, "Добавьте текст для ведущей: минимум 20 символов")
+      .max(1500),
+    sourceUrls: z
+      .array(sourceUrl)
+      .min(1, "Добавьте хотя бы один источник для каждой темы")
+      .max(5),
+    durationSeconds: z.number().int().min(5).max(45),
+    presenterAsset: assetName,
+    brollAsset: z.union([assetName, z.literal("")]),
+    windows: z.array(NewsWindowSchema).max(12).default([]),
+  })
+  .superRefine((scene, context) => {
+    const sorted = [...scene.windows].sort(
+      (a, b) => a.startSeconds - b.startSeconds,
+    );
+    if (scene.brollAsset && sorted.length)
+      context.addIssue({
+        code: "custom",
+        path: ["windows"],
+        message:
+          "Выберите сопровождающие окна или прежний материал над ведущей",
+      });
+    if (new Set(sorted.map((w) => w.id)).size !== sorted.length)
+      context.addIssue({
+        code: "custom",
+        path: ["windows"],
+        message: "Идентификаторы окон должны быть уникальны",
+      });
+    sorted.forEach((window, index) => {
+      if (
+        window.endSeconds - window.startSeconds < 0.5 ||
+        window.endSeconds > scene.durationSeconds
+      )
+        context.addIssue({
+          code: "custom",
+          path: ["windows", index],
+          message: "Окно должно длиться от 0.5 сек. и укладываться в тему",
+        });
+      if (index && window.startSeconds < sorted[index - 1].endSeconds)
+        context.addIssue({
+          code: "custom",
+          path: ["windows", index],
+          message:
+            "Сопровождающие окна не должны перекрывать друг друга по времени",
+        });
+    });
+  });
 
 export const NewsDraftSchema = z
   .object({

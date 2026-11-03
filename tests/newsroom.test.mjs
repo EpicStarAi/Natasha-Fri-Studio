@@ -28,6 +28,41 @@ const draft = () => ({
   ],
 });
 
+test("timed windows survive package export and reject overlaps, missing credits and out-of-scene times", () => {
+  const input = draft();
+  const window = {
+    id: "cue-one",
+    asset: "photo.jpg",
+    startSeconds: 0,
+    endSeconds: 5,
+    headline: "Короткий заголовок",
+    label: "АРХИВ",
+    credit: "Источник: ESA",
+    sourceUrl: "https://www.esa.int/",
+    anchorText: "Первая фраза",
+  };
+  input.scenes[0].windows = [window];
+  const pack = createNewsPackage(input, "test-id");
+  assert.equal(pack.scenes[0].windows[0].anchorText, "Первая фраза");
+  assert.equal(pack.scenes[0].windows[0].mediaStartSeconds, 0);
+  for (const mutation of [
+    { endSeconds: 16 },
+    { credit: "" },
+    { asset: "../secret.jpg" },
+    { startSeconds: 4.8 },
+  ]) {
+    input.scenes[0].windows = [{ ...window, ...mutation }];
+    assert.equal(NewsDraftSchema.safeParse(input).success, false);
+  }
+  input.scenes[0].windows = [
+    window,
+    { ...window, id: "two", startSeconds: 4, endSeconds: 8 },
+  ];
+  assert.equal(NewsDraftSchema.safeParse(input).success, false);
+  input.scenes[0].windows[1].startSeconds = 5;
+  assert.equal(NewsDraftSchema.safeParse(input).success, true);
+});
+
 test("source validation rejects missing, malformed, credential and non-HTTPS links without throwing", () => {
   for (const sourceUrls of [
     [],

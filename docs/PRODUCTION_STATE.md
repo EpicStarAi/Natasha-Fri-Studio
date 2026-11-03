@@ -127,3 +127,13 @@ reusable template for other avatars and themes. Do not restart tool selection.
   45 gateway HTTP checks passed. The inherited API still has 56 TypeScript
   errors; details are in the VPN project's docs/WSL_DEPLOYMENT.md. Do not report
   the entire VPN codebase as clean or VPN traffic/subscriptions as restored.
+
+## Timed accompaniment — user requirement (2026-11-04)
+
+Keep the approved full presenter visible and add prepared image/video windows
+at upper left, as in user reference 20190.png. Synchronize each change with a
+specific phrase and the actual voice timing. Keep face and hands clear. Add
+short headlines, source credits, archive/visualization labels; no continuous
+subtitles. Windows are a separate montage layer, editable without regenerating
+the presenter when narration is unchanged. Interactive controls belong in the
+editor; the MP4 contains the rendered animated windows.

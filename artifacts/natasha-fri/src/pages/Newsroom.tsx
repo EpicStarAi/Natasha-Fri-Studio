@@ -23,6 +23,7 @@ import {
 } from "@workspace/api-zod";
 import { z } from "zod/v4";
 import "./newsroom.css";
+import { NewsWindowEditor, NewsWindowPreview } from "../components/NewsWindows";
 
 const STORAGE_KEY = "newnews-rus-draft-v1";
 const blankScene = (index: number): NewsDraft["scenes"][number] => ({
@@ -33,6 +34,7 @@ const blankScene = (index: number): NewsDraft["scenes"][number] => ({
   durationSeconds: 15,
   presenterAsset: `presenter-${index}.mp4`,
   brollAsset: "",
+  windows: [],
 });
 const initialDraft = (): NewsDraft => ({
   title: "",
@@ -55,6 +57,23 @@ const storedDraft = z.object({
         durationSeconds: z.number().int().min(5).max(45),
         presenterAsset: z.string().max(160),
         brollAsset: z.string().max(160),
+        windows: z
+          .array(
+            z.object({
+              id: z.string().max(60),
+              asset: z.string().max(160),
+              startSeconds: z.number(),
+              endSeconds: z.number(),
+              mediaStartSeconds: z.number(),
+              headline: z.string().max(60),
+              label: z.string().max(28),
+              credit: z.string().max(42),
+              sourceUrl: z.string().max(2000),
+              anchorText: z.string().max(250),
+            }),
+          )
+          .max(12)
+          .default([]),
       }),
     )
     .min(1)
@@ -617,6 +636,52 @@ export default function Newsroom() {
                       </label>
                     </div>
                   ))}
+                  <div className="nn-scene-tabs">
+                    {draft.scenes.map((item, index) => (
+                      <button
+                        key={item.id}
+                        className={selected === index ? "active" : ""}
+                        onClick={() => setSelected(index)}
+                      >
+                        Окна темы {index + 1}
+                      </button>
+                    ))}
+                  </div>
+                  <NewsWindowEditor
+                    scene={scene}
+                    onChange={(windows) =>
+                      updateScene({
+                        windows,
+                        ...(windows.length ? { brollAsset: "" } : {}),
+                      })
+                    }
+                  />
+                  <label className="nn-secondary nn-file-picker">
+                    Импорт выпуска JSON
+                    <input
+                      type="file"
+                      accept="application/json,.json"
+                      onChange={async (event) => {
+                        const file = event.target.files?.[0];
+                        if (!file) return;
+                        try {
+                          const parsed = NewsDraftSchema.parse(
+                            JSON.parse(await file.text()),
+                          );
+                          setDraft(parsed);
+                          setSelected(0);
+                          setMessage(
+                            "Выпуск загружен. Выберите его медиафайлы для предпросмотра.",
+                          );
+                        } catch {
+                          setMessage(
+                            "Не удалось импортировать выпуск: проверьте формат, источники и таймкоды.",
+                          );
+                        }
+                        event.target.value = "";
+                      }}
+                    />
+                  </label>
                   <div className="nn-connection">
                     <div>
                       <strong>{apiState}</strong>
@@ -662,35 +727,7 @@ export default function Newsroom() {
                 <span>МАКЕТ КАДРА</span>
                 <span>1080 × 1920</span>
               </div>
-              <div className="nn-frame">
-                <img
-                  className="nn-approved-presenter"
-                  src={`${import.meta.env.BASE_URL}newnews/presenter-master.png`}
-                  alt="Утверждённая ведущая NEW NEWS за столом с микрофоном"
-                />
-                <div className="nn-frame-top">
-                  <span>
-                    NEW<span>🌏</span>NEWS
-                  </span>
-                  <b>RUS</b>
-                </div>
-                <div className="nn-broll">
-                  <div className="nn-corner nn-corner-one" />
-                  <div className="nn-corner nn-corner-two" />
-                  <Clapperboard size={27} strokeWidth={1} />
-                  <span>МАТЕРИАЛ ТЕМЫ</span>
-                  <strong>
-                    {scene.headline || "Здесь появится визуальный контекст"}
-                  </strong>
-                </div>
-                <div className="nn-frame-footer">
-                  <span>NEW🌏NEWS🇷🇺RUS</span>
-                  <span>9:16</span>
-                </div>
-              </div>
-              <p className="nn-preview-caption">
-                Утверждённый образ. Статичный макет с карточкой темы слева.
-              </p>
+              <NewsWindowPreview scene={scene} />
               <div className="nn-format-list">
                 <span>
                   <Check size={14} />

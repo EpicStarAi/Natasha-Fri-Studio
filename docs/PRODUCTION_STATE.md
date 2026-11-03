@@ -137,3 +137,10 @@ short headlines, source credits, archive/visualization labels; no continuous
 subtitles. Windows are a separate montage layer, editable without regenerating
 the presenter when narration is unchanged. Interactive controls belong in the
 editor; the MP4 contains the rendered animated windows.
+# Производственный журнал
+
+По запросу пользователя включён структурированный JSONL-журнал: общий runId,
+время, PID, этап, длительность, ошибка/traceback, promptId ComfyUI, SHA-256 файлов.
+Основные команды озвучки, генерации и монтажа пишут его автоматически.
+Для уже запущенной Hera подключён наблюдатель; предыдущие готовые файлы помечены
+как наблюдаемые, без выдуманных исторических событий. См. PRODUCTION_LOGGING_RU.md.

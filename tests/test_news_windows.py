@@ -11,6 +11,7 @@ import unittest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]/'scripts'))
 import render_newnews as render
 from news_windows import validate_windows
+from production_log import inspect
 
 
 def cue(identifier, filename, start, end):
@@ -51,6 +52,10 @@ class NewsWindowsTests(unittest.TestCase):
         pack = {'schemaVersion':1,'channel':{'id':'newnews-rus','format':render.FORMAT},'introAsset':'intro.png','scenes':[scene]}
         manifest=self.root/'episode.json';manifest.write_text(json.dumps(pack))
         output=self.root/'final.mp4'; report=render.render(manifest,self.root,output)
+        journal = inspect(self.root/'production.events.jsonl')
+        for stage in ('media.validate','intro.render','scene.1.windows','montage.concat','audio.normalize','output.verify','output.save','episode.render'):
+            self.assertEqual(journal['stages'][stage]['state'], 'succeeded')
+        self.assertEqual(journal['failures'], [])
         self.assertAlmostEqual(report['actualDurationSeconds'],4,delta=0.15)
         colors=[]
         for second in [1.65,2.17,2.65,3.6]:

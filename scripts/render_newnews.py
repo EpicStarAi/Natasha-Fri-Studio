@@ -18,6 +18,7 @@ from urllib.parse import urlsplit
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from news_windows import validate_windows, render_scene, normalize_news_audio
+from production_log import ProductionLog
 
 IMAGES = {'.jpg', '.jpeg', '.png', '.webp'}
 VIDEOS = {'.mp4', '.mov', '.webm', '.mkv'}
@@ -119,15 +120,33 @@ def input_args(filename):
     return ['-protocol_whitelist', 'file,pipe', '-i', str(filename)]
 
 
-def render(manifest, root, output, check_only=False):
-    if not shutil.which('ffmpeg') or not shutil.which('ffprobe'):
-        raise ValueError('Установите FFmpeg и FFprobe')
-    root = root.resolve()
-    if not root.is_dir():
-        raise ValueError('Папка материалов не найдена')
-    pack = json.loads(manifest.read_text(encoding='utf-8'))
-    intro, planned, duration = plan_render(pack, root)
-    report = {'channel': 'newnews-rus', 'scenes': len(planned), 'durationSeconds': duration, 'format': FORMAT}
+def render(manifest, root, output, check_only=False, log=None):
+    log = log or ProductionLog(output.parent / 'production.events.jsonl')
+    with log.stage('episode.check' if check_only else 'episode.render', manifest=str(manifest), output=str(output)):
+        return _render(manifest, root, output, check_only, log)
+
+
+def _render(manifest, root, output, check_only, log):
+    with log.stage('media.validate', assets=str(root)):
+        if not shutil.which('ffmpeg') or not shutil.which('ffprobe'):
+            raise ValueError('Установите FFmpeg и FFprobe')
+        root = root.resolve()
+        if not root.is_dir():
+            raise ValueError('Папка материалов не найдена')
+        pack = json.loads(manifest.read_text(encoding='utf-8'))
+        intro, planned, duration = plan_render(pack, root)
+        log.artifact('manifest.input', manifest)
+        inputs = {intro}
+        for host, broll, _ in planned:
+            inputs.add(host)
+            if broll:
+                inputs.add(broll)
+        for scene in pack['scenes']:
+            inputs.update(root / cue['asset'] for cue in scene.get('windows', []))
+        for path in sorted(inputs):
+            log.artifact('media.input', path)
+    report = {'channel': 'newnews-rus', 'runId': log.run_id, 'log': str(log.path),
+              'scenes': len(planned), 'durationSeconds': duration, 'format': FORMAT}
     if check_only:
         print(json.dumps({**report, 'state': 'media_checked'}, ensure_ascii=False))
         return report
@@ -139,14 +158,18 @@ def render(manifest, root, output, check_only=False):
     with tempfile.TemporaryDirectory(prefix='.newnews-', dir=output.parent) as working:
         working = Path(working)
         parts = [working / 'part-000.mp4']
-        run(base + ['-loop', '1'] + input_args(intro) + ['-f', 'lavfi', '-i', 'anullsrc=r=48000:cl=stereo', '-map', '0:v:0', '-map', '1:a:0', '-vf', normalize(1080, 1920)] + encode_args(1, parts[0]))
+        with log.stage('intro.render'):
+            run(base + ['-loop', '1'] + input_args(intro) + ['-f', 'lavfi', '-i', 'anullsrc=r=48000:cl=stereo', '-map', '0:v:0', '-map', '1:a:0', '-vf', normalize(1080, 1920)] + encode_args(1, parts[0]))
         for index, (host, broll, seconds) in enumerate(planned, 1):
             part = working / f'part-{index:03d}.mp4'
             windows = validate_windows(pack['scenes'][index-1], root, seconds, asset, probe, IMAGES, VIDEOS)
             if windows:
                 scene_work = working / f'graphics-{index}'
                 scene_work.mkdir()
-                render_scene(host, windows, seconds, part, scene_work, run, normalize, encode_args, input_args, IMAGES)
+                with log.stage(f'scene.{index}.windows', presenter=str(host), durationSeconds=seconds):
+                    for cue in pack['scenes'][index-1]['windows']:
+                        log.emit(f'scene.{index}.cue', 'scheduled', **cue)
+                    render_scene(host, windows, seconds, part, scene_work, run, normalize, encode_args, input_args, IMAGES)
                 parts.append(part)
                 continue
             args = base + input_args(host)
@@ -157,25 +180,33 @@ def render(manifest, root, output, check_only=False):
             else:
                 args += ['-map', '0:v:0', '-map', '0:a:0', '-vf', f'setpts=PTS-STARTPTS,tpad=stop_mode=clone:stop_duration=1,{normalize(1080, 1920)}']
             args += ['-af', 'asetpts=PTS-STARTPTS,apad'] + encode_args(seconds, part)
-            run(args)
+            with log.stage(f'scene.{index}.render', presenter=str(host), durationSeconds=seconds):
+                run(args)
             parts.append(part)
         listing = working / 'concat.txt'
         listing.write_text(''.join(f"file '{part.name}'\n" for part in parts), encoding='utf-8')
         final = working / 'final.mp4'
-        run(base + ['-f', 'concat', '-safe', '1', '-i', str(listing), '-map', '0:v:0', '-map', '0:a:0', '-c:v', 'copy', '-af', 'aresample=async=1:first_pts=0', '-c:a', 'aac', '-ar', '48000', '-ac', '2', '-b:a', '192k', '-movflags', '+faststart', str(final)])
+        with log.stage('montage.concat', parts=len(parts)):
+            run(base + ['-f', 'concat', '-safe', '1', '-i', str(listing), '-map', '0:v:0', '-map', '0:a:0', '-c:v', 'copy', '-af', 'aresample=async=1:first_pts=0', '-c:a', 'aac', '-ar', '48000', '-ac', '2', '-b:a', '192k', '-movflags', '+faststart', str(final)])
         if any(scene.get('windows') for scene in pack['scenes']):
             normalized = working / 'normalized.mp4'
-            report['audio'] = normalize_news_audio(final, normalized)
+            with log.stage('audio.normalize', targetLufs=-16, truePeakLimitDb=-1.5):
+                report['audio'] = normalize_news_audio(final, normalized)
+                log.emit('audio.measurement', 'measured', **report['audio'])
             final = normalized
-        info = probe(final)
-        video = next(s for s in info['streams'] if s['codec_type'] == 'video')
-        actual = float(info['format']['duration'])
-        if (video['width'], video['height']) != (1080, 1920) or abs(actual - duration) > 0.3:
-            raise ValueError('Проверка готового файла не пройдена')
-        if actual > 60:
-            raise ValueError('Готовый MP4 длиннее 60 секунд с учётом кодирования. Немного сократите исходные клипы.')
-        # Same filesystem, atomic publish, refuses an existing output even in a race.
-        os.link(final, output)
+        with log.stage('output.verify'):
+            info = probe(final)
+            video = next(s for s in info['streams'] if s['codec_type'] == 'video')
+            actual = float(info['format']['duration'])
+            if (video['width'], video['height']) != (1080, 1920) or abs(actual - duration) > 0.3:
+                raise ValueError('Проверка готового файла не пройдена')
+            if actual > 60:
+                raise ValueError('Готовый MP4 длиннее 60 секунд с учётом кодирования. Немного сократите исходные клипы.')
+            log.emit('output.verify', 'measured', width=video['width'], height=video['height'], durationSeconds=actual)
+        with log.stage('output.save', output=str(output)):
+            # Same filesystem, atomic publish, refuses an existing output even in a race.
+            os.link(final, output)
+            log.artifact('output.file', output)
     report.update({'state': 'rendered', 'output': str(output), 'actualDurationSeconds': actual})
     print(json.dumps(report, ensure_ascii=False))
     return report
@@ -187,9 +218,11 @@ def main():
     parser.add_argument('--assets', required=True, type=Path)
     parser.add_argument('--output', type=Path, default=Path('newnews-rus.mp4'))
     parser.add_argument('--check', action='store_true', help='Проверить материалы без рендера')
+    parser.add_argument('--run-log', type=Path, help='Общий JSONL-журнал задания')
     args = parser.parse_args()
     try:
-        render(args.manifest, args.assets, args.output, args.check)
+        log = ProductionLog(args.run_log or args.output.parent / 'production.events.jsonl')
+        render(args.manifest, args.assets, args.output, args.check, log)
     except (ValueError, OSError, KeyError, TypeError, subprocess.TimeoutExpired, subprocess.CalledProcessError) as error:
         parser.exit(1, f'NEW NEWS: {error}\n')
 

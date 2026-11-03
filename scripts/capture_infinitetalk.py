@@ -16,6 +16,7 @@ from urllib.parse import urlencode, urlsplit
 from urllib.request import Request, urlopen
 import uuid
 import wave
+from production_log import ProductionLog
 
 
 def request(base, route, body=None):
@@ -25,7 +26,7 @@ def request(base, route, body=None):
         return json.load(response)
 
 
-def capture(args):
+def capture(args, log=None):
     origin = urlsplit(args.url)
     if origin.scheme != 'http' or origin.hostname not in {'127.0.0.1', 'localhost', '::1'} or origin.username or origin.password:
         raise ValueError('Use a local HTTP ComfyUI endpoint')
@@ -49,6 +50,9 @@ def capture(args):
     missing = sorted({node['class_type'] for node in graph.values()} - set(schema))
     if missing:
         raise ValueError('Missing installed nodes: ' + ', '.join(missing))
+    if log:
+        for path in (args.image, args.audio, args.workflow):
+            log.artifact('presenter.input', path)
     tag = 'newnews_' + uuid.uuid4().hex
     image_name, audio_name = tag + args.image.suffix.lower(), tag + '.wav'
     shutil.copyfile(args.image, inputs / image_name)
@@ -67,14 +71,21 @@ def capture(args):
     metadata = {'promptId': prompt_id, 'audioSeconds': seconds, 'workflow': graph,
                 'state': 'submitted', 'sourceSize': [384, 672], 'sourceFps': 25}
     record.write_text(json.dumps(metadata, indent=2), encoding='utf-8')
+    if log:
+        log.emit('comfy.queue', 'submitted', promptId=prompt_id, audioSeconds=seconds,
+                 sourceSize=[384, 672], seed=args.seed, workflowFile=str(args.workflow), record=str(record))
     print(json.dumps({'promptId': prompt_id, 'record': str(record)}), flush=True)
     deadline = time.monotonic() + args.timeout
+    last_heartbeat = 0
     while time.monotonic() < deadline:
         history = request(base, '/history/' + prompt_id).get(prompt_id)
         if history:
             metadata['state'] = history['status']['status_str']
             metadata['history'] = history
             record.write_text(json.dumps(metadata, indent=2), encoding='utf-8')
+            if log:
+                log.emit('comfy.result', metadata['state'], promptId=prompt_id,
+                         messages=history.get('status', {}).get('messages', []))
             if metadata['state'] != 'success':
                 raise ValueError('ComfyUI generation failed; inspect ' + str(record))
             clips = [clip for out in history.get('outputs', {}).values()
@@ -93,7 +104,13 @@ def capture(args):
                     raise ValueError('Returned MP4 is empty')
                 os.link(file, args.output)
             print(json.dumps({'state': 'captured', 'output': str(args.output)}))
+            if log:
+                log.artifact('presenter.capture', args.output, promptId=prompt_id)
             return
+        if log and time.monotonic() - last_heartbeat >= 30:
+            log.emit('comfy.wait', 'heartbeat', promptId=prompt_id,
+                     remainingSeconds=round(deadline-time.monotonic()))
+            last_heartbeat = time.monotonic()
         time.sleep(10)
     # A global interrupt could stop somebody else's next job. Keep the ID for
     # deliberate recovery rather than interrupting the whole ComfyUI instance.
@@ -109,10 +126,13 @@ def main():
     parser.add_argument('--url', default='http://127.0.0.1:8188')
     parser.add_argument('--seed', type=int, default=20261103)
     parser.add_argument('--timeout', type=int, default=5400)
+    parser.add_argument('--run-log', type=Path, help='Общий JSONL-журнал задания')
     parser.add_argument('--workflow', type=Path, default=Path(__file__).resolve().parents[1] / 'workflows/newnews/infinite-talk-api.json')
     args = parser.parse_args()
+    log = ProductionLog(args.run_log or args.output.parent / 'production.events.jsonl')
     try:
-        capture(args)
+        with log.stage('presenter.generate', output=str(args.output)):
+            capture(args, log)
     except (ValueError, OSError, KeyError, wave.Error, TimeoutError) as error:
         parser.exit(1, f'InfiniteTalk: {error}\n')
 

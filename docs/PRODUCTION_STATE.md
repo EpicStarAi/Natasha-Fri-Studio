@@ -64,10 +64,10 @@ why the hands froze, crop them away, or call a zoom on a still image animation.
   background services. Admin must be localhost-only. Resolve existing config,
   data and bot process before starting; do not create a duplicate poller.
 - These are additions to the moving-hands video fix, not replacements.
-- Active local GPU lease: OpenSpline native PID 2275 was gracefully stopped
-  after /readyz confirmed no occupied sessions. Restore it using its existing
-  /home/buch/.local/share/openspline/run.sh after the ComfyUI work.
-- Main Windows ComfyUI was started on localhost:8188 (PID 19680).
+- GPU lease completed: idle OpenSpline was stopped for the render, then restored
+  with /home/buch/os_start_low.sh. /readyz confirmed ready=true, occupied=false.
+- Main Windows ComfyUI was started on localhost:8188 for this task, then its
+  models were freed and the task-owned idle process stopped to return GPU memory.
 - Full-body voice-conditioned path found: Wan 2.1 I2V Q4 + InfiniteTalk Q8,
   existing Lightx2v LoRA and installed WanVideoWrapper example workflow.
 - First prompt 4efafbfc-255a-4d33-b8f2-b787c2ba865f failed before generation:
@@ -84,3 +84,31 @@ why the hands froze, crop them away, or call a zoom on a still image animation.
   to mock mode; an actual continuous radio stream is not verified.
 - Radio should reuse voices and scheduled content from the production system,
   but a visible Live badge or browser TTS is not proof of an online station.
+
+## Verified motion take and current deployment
+
+- InfiniteTalk prompt 85e0b67d-b836-416b-8c14-234490ff9ad7 completed successfully
+  in 1322 seconds. Source: 384×672 at 25fps. Eight sampled times show changing
+  hand positions, hands resting on the desk, shoulder/head movement and retained
+  face, hoodie, microphone and studio. Do not call this native 1080p detail.
+- The generated silent intermediate has 369 frames/14.76s. VHS's audio-muxed
+  file has 342 video frames/13.68s and the full 13.792653s audio. The delivered
+  take uses the untrimmed generated video plus the original WAV, normalized to
+  13.8s before adding the one-second intro. No spoken ending is discarded.
+- Windows outputs: C:\AI_FACTORY\NEWNEWS_RUS\presenter-motion-complete.mp4 and
+  NEW_NEWS_RUS_MOTION_V2_1080x1920.mp4. Reusable graph/runner are now in this repo.
+- Newsroom DEEP INSIDE styling deployed to http://127.0.0.1:17888/.
+- VPN source recovered from C:\Users\Admin\Documents\HIDE MY NAME VPN into
+  /home/buch/projects/hidemyname-wsl. Enabled systemd user services:
+  hidemyname-api, hidemyname-mini, hidemyname-admin, hidemyname-tunnel.
+- VPN admin is only http://127.0.0.1:20130/admin/. Mini App local port 18938,
+  internal API port 8100; all bind loopback. Only the Mini App is tunneled.
+- Current public URL is recorded on the PC in
+  /home/buch/projects/hidemyname-wsl/.local/hidemyname/public-url.txt;
+  Quick Tunnel addresses may change on restart. Do not tunnel the admin/API.
+- VPN bot is NOT ONLINE: no valid TELEGRAM_BOT_TOKEN was found in recovered
+  project configs. Local private setup: C:\AI_FACTORY\HIDEMYNAME_WSL\Connect-Telegram-Bot.cmd.
+- Existing VPN production builds, 14 download/operator tests, 2 URL tests and
+  45 gateway HTTP checks passed. The inherited API still has 56 TypeScript
+  errors; details are in the VPN project's docs/WSL_DEPLOYMENT.md. Do not report
+  the entire VPN codebase as clean or VPN traffic/subscriptions as restored.

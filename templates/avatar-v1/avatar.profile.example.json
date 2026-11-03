@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "name": "Technology desk — example, not rendered",
+  "topic": "Технологии и объяснения",
+  "language": "ru",
+  "voice": {
+    "engine": "Supertonic 3",
+    "preset": "M1",
+    "speed": 1.0,
+    "steps": 8,
+    "cloned": false
+  },
+  "brand": {
+    "designSystem": "DEEP INSIDE",
+    "background": "#030305",
+    "surface": "#0a0a0f",
+    "text": "#f0f4f8",
+    "cyan": "#00ffff",
+    "pink": "#ff0055",
+    "font": "Inter"
+  },
+  "seed": 20261104,
+  "positivePrompt": "Locked camera, realistic technology studio. The same adult male presenter with short silver hair in a navy jacket sits at the same desk as in the approved reference image. He speaks calmly to camera, with natural lip movement, subtle facial expressions and soft shoulder breathing. His relaxed forearms rest on the desk; occasional small open-handed gestures, anatomically correct fingers. Preserve identity, age, hairstyle, jacket, microphone, desk, room and lighting from the reference. No camera movement. Photographic skin and lighting.",
+  "negativePrompt": "frozen body, static hands, floating hands, detached arms, extra fingers, fused fingers, broken wrists, deformed hands, extra arms, jitter, repetitive loop, exaggerated gestures, dancing, large body movement, identity change, changed clothes, changed room, camera movement, zoom, blur, subtitles, text, watermark",
+  "editorialNotes": "Пример профиля. Сначала утвердить собственный мастер-кадр и тест голоса; результат ещё не генерировался.",
+  "delivery": {
+    "width": 1080,
+    "height": 1920,
+    "fps": 30,
+    "introSeconds": 1,
+    "subtitles": false
+  }
+}

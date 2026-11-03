@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "name": "NEW NEWS RUS — approved V1",
+  "topic": "Новости и контекст",
+  "language": "ru",
+  "voice": {
+    "engine": "Supertonic 3",
+    "preset": "F1",
+    "speed": 1.0,
+    "steps": 8,
+    "cloned": false
+  },
+  "brand": {
+    "designSystem": "DEEP INSIDE",
+    "background": "#030305",
+    "surface": "#0a0a0f",
+    "text": "#f0f4f8",
+    "cyan": "#00ffff",
+    "pink": "#ff0055",
+    "font": "Inter"
+  },
+  "seed": 20261103,
+  "positivePrompt": "Locked camera, realistic news studio. The same brunette female presenter in a black hoodie sits behind the same desk microphone. She speaks naturally to camera. Her shoulders move softly with breathing. She gradually lowers her raised hands to a relaxed position on the desk, occasionally making a small gentle open-handed gesture to emphasize a phrase. Both forearms and hands move together naturally, anatomically correct fingers. Calm confident delivery, subtle facial expressions. Preserve her face, long dark hair, black hoodie, microphone, desk, blue purple curtains, warm lamp and the studio composition. Soft photographic lighting, realistic skin.",
+  "negativePrompt": "frozen body, static hands, floating hands, detached arms, extra fingers, fused fingers, broken wrists, deformed hands, extra arms, jitter, repetitive loop, exaggerated gestures, dancing, large body movement, identity change, changed clothes, changed room, camera movement, zoom, blur, subtitles, text, watermark",
+  "editorialNotes": "Факты проверяются по источникам; публикация только после просмотра.",
+  "delivery": {
+    "width": 1080,
+    "height": 1920,
+    "fps": 30,
+    "introSeconds": 1,
+    "subtitles": false
+  }
+}

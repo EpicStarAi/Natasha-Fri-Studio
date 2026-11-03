@@ -31,15 +31,30 @@ production path. Do not restart tool selection when a working setup is recorded.
 - The delivered 14.8s pilot overlays a 640px animated face crop onto a static
   portrait. USER REJECTED THIS BODY MOTION: both hands freeze in a raised gesture.
   It is a technical pilot, not the final animation method.
-- Trial F1 voice is not a cloned/approved final voice.
+- The F1 preset is not a voice clone. The user has now approved the complete
+  motion V2 clip, including this trial voice, as a reusable V1 baseline.
 - Editor does not launch GPU generation. Social posting is not connected.
 
-## Current task
+## Current task and approved checkpoint (2026-11-04)
 
-Fix full-presenter motion using the existing AI_FACTORY toolchain, produce and
-inspect a short real motion test, then carry the successful method into a new
-video. Preserve the approved identity and visual format. Do not merely explain
-why the hands froze, crop them away, or call a zoom on a still image animation.
+The full-presenter motion fix is complete and the user approved the delivered
+MOTION_V2 video. Their next request is to preserve the result and document a
+reusable template for other avatars and themes. Do not restart tool selection.
+
+- Operator guide: [AVATAR_FACTORY_V1_RU.md](AVATAR_FACTORY_V1_RU.md).
+- Frozen pre-template code: c4965b9c729c2df66c3ad634fedcac1446dce249;
+  branch checkpoint/avatar-motion-v1-approved-2026-11-04.
+- Approved chat MP4 SHA-256:
+  e2173b9d1a6d706bb898440bc1c287e1a61b30d97d243463a54cb99d365bd978.
+- Runtime/model inventories: config/avatar-v1/; reusable profiles:
+  templates/avatar-v1/. The alternative profile is an example, not a rendered
+  or user-approved second avatar.
+- Exact TTS: /home/buch/newnews-tools/tts-supertonic/.venv/bin/python;
+  SDK supertonic 1.3.1, model supertonic-3, F1, ru, 8 steps, speed 1.0, CPU.
+  Production synthesis disables downloads. Original WAV is 13.792653 seconds.
+- New helpers prepare a profile-specific graph and assemble any topic from a
+  generated clip plus its original WAV. They do not automate GPU service
+  handoff, editor integration or social publishing.
 
 ## Retrieved prior setup — verify runtime before use
 

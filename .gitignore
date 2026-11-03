@@ -58,5 +58,12 @@ Thumbs.db
 # Логи
 *.log
 
+# Local newsroom drafts, media and Python cache
+/data/
+/media/
+/renders/
+__pycache__/
+*.pyc
+
 # Windows
 Desktop.ini

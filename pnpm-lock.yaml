@@ -406,6 +406,9 @@ importers:
 
   artifacts/natasha-fri:
     dependencies:
+      '@workspace/api-zod':
+        specifier: workspace:*
+        version: link:../../lib/api-zod
       react-markdown:
         specifier: ^10.1.0
         version: 10.1.0(@types/react@19.2.17)(react@19.1.0)

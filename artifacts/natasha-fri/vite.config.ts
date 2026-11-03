@@ -53,6 +53,7 @@ export default defineConfig({
     emptyOutDir: true,
   },
   server: {
+    proxy: { '/api': { target: process.env.API_PROXY_TARGET ?? 'http://127.0.0.1:5000', changeOrigin: true } },
     port,
     strictPort: true,
     host: '0.0.0.0',
@@ -62,6 +63,7 @@ export default defineConfig({
     },
   },
   preview: {
+    proxy: { '/api': { target: process.env.API_PROXY_TARGET ?? 'http://127.0.0.1:5000', changeOrigin: true } },
     port,
     host: '0.0.0.0',
     allowedHosts: true,

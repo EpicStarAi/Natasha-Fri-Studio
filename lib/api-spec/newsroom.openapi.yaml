@@ -1,0 +1,143 @@
+openapi: 3.1.0
+info:
+  title: NewNewsStudio
+  version: 1.0.0
+  description: Production packages for NEW🌏NEWS🇷🇺RUS. Schema implementation is in api-zod/src/newsroom.ts.
+servers:
+  - url: /api
+paths:
+  /newsroom/status:
+    get:
+      operationId: getNewsroomStatus
+      responses:
+        "200":
+          description: Configuration only, not GPU/model/platform health
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [channel, storageConfigured, rendering, publishing]
+                properties:
+                  channel: { type: object }
+                  storageConfigured: { type: boolean }
+                  rendering: { const: manual-local }
+                  publishing: { const: not-connected }
+  /newsroom/packages:
+    post:
+      operationId: createNewsPackage
+      security: [{ StudioToken: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/NewsDraft" }
+      responses:
+        "201":
+          description: Saved on disk; awaiting media, no generation or publication is triggered
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/NewsPackage" }
+        "400": { description: Draft validation failed }
+        "401": { description: Missing or incorrect bearer token }
+        "429": { description: Rate limit exceeded }
+        "500": { description: Storage failure }
+        "503": { description: Studio token not configured }
+  /newsroom/packages/{id}:
+    get:
+      operationId: getNewsPackage
+      security: [{ StudioToken: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: Saved package
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/NewsPackage" }
+        "400": { description: Invalid ID }
+        "401": { description: Missing or incorrect bearer token }
+        "404": { description: Package not found }
+        "429": { description: Rate limit exceeded }
+        "500": { description: Storage failure }
+        "503": { description: Studio token not configured }
+components:
+  securitySchemes:
+    StudioToken: { type: http, scheme: bearer }
+  schemas:
+    AssetName:
+      type: string
+      maxLength: 160
+      pattern: "^[a-zA-Z0-9][a-zA-Z0-9_.-]*$"
+    NewsScene:
+      type: object
+      required:
+        [
+          id,
+          headline,
+          narration,
+          sourceUrls,
+          durationSeconds,
+          presenterAsset,
+          brollAsset,
+        ]
+      properties:
+        id: { type: string, pattern: "^[a-zA-Z0-9-]{1,60}$" }
+        headline: { type: string, minLength: 3, maxLength: 120 }
+        narration: { type: string, minLength: 20, maxLength: 1500 }
+        sourceUrls:
+          type: array
+          minItems: 1
+          maxItems: 5
+          items:
+            { type: string, format: uri, pattern: "^https://", maxLength: 2000 }
+          description: HTTPS URLs without username/password. Not fetched or verified by server.
+        durationSeconds: { type: integer, minimum: 5, maximum: 45 }
+        presenterAsset: { $ref: "#/components/schemas/AssetName" }
+        brollAsset:
+          anyOf:
+            - { $ref: "#/components/schemas/AssetName" }
+            - { const: "" }
+    NewsDraft:
+      type: object
+      required: [title, focus, introAsset, scenes]
+      properties:
+        title: { type: string, minLength: 3, maxLength: 100 }
+        focus: { type: string, enum: [world, russia-world, technology] }
+        introAsset: { $ref: "#/components/schemas/AssetName" }
+        scenes:
+          type: array
+          minItems: 1
+          maxItems: 6
+          items: { $ref: "#/components/schemas/NewsScene" }
+          description: Unique scene IDs. Sum of durations plus 1-second intro must be <=60.
+    NewsPackage:
+      allOf:
+        - { $ref: "#/components/schemas/NewsDraft" }
+        - type: object
+          required:
+            [
+              schemaVersion,
+              id,
+              createdAt,
+              channel,
+              state,
+              targetDurationSeconds,
+              publication,
+              production,
+            ]
+          properties:
+            schemaVersion: { const: 1 }
+            id: { type: string, format: uuid }
+            createdAt: { type: string, format: date-time }
+            channel: { type: object }
+            state: { const: awaiting_media }
+            targetDurationSeconds: { type: integer, maximum: 60 }
+            publication:
+              type: object
+              properties:
+                automatic: { const: false }
+                destinations: { type: array, maxItems: 0 }
+            production: { type: object }

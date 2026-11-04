@@ -2,8 +2,8 @@ import { z } from "zod/v4";
 
 export const NEWS_CHANNEL = {
   id: "newnews-rus",
-  name: "NEW🌏NEWS🇷🇺RUS",
-  language: "ru-RU",
+  name: "NEW🌐NEWS",
+  language: "uk-UA",
   timezone: "Europe/Kyiv",
   format: {
     width: 1080,
@@ -154,11 +154,12 @@ export function createNewsPackage(
       1 + draft.scenes.reduce((sum, scene) => sum + scene.durationSeconds, 0),
     publication: { automatic: false as const, destinations: [] as string[] },
     production: {
-      presenter: "approved-newnews-presenter",
-      voice: "approved-russian-voice",
+      presenter: "Novikova💋Forever",
+      voice: "supertonic-3-F1-uk",
       instructions: [
-        "Использовать только утверждённую ведущую NEW NEWS и её голос.",
-        "Создать отдельный lip-sync MP4 с непрерывной русской речью для каждой темы.",
+        "Ведущая Novikova💋Forever, канал NEW🌐NEWS, язык эфира — украинский (uk-UA).",
+        "Создать отдельный lip-sync MP4 с непрерывной украинской речью для каждой темы.",
+        "Перед синтезом проверить словарь языка и ударения; после синтеза прослушать весь дубль. ASR не проверяет ударения.",
         "Не обрезать окончания слов. Хронометраж — ориентир; монтаж использует клипы целиком.",
         "Проверить факты по указанным источникам; ссылки сами по себе не подтверждают достоверность.",
         "Фото и видео источников добавлять только при наличии права использования.",

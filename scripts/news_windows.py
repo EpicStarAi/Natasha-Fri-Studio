@@ -54,7 +54,7 @@ def validate_windows(scene, root, duration, asset, probe, images, videos):
     return planned
 
 
-def draw_graphics(folder, windows):
+def draw_graphics(folder, windows, language="uk-UA"):
     try:
         from PIL import Image, ImageDraw, ImageFont
     except ImportError as error:
@@ -79,7 +79,8 @@ def draw_graphics(folder, windows):
     d.ellipse((188, 91, 206, 129), outline='white', width=1)
     d.line((178, 110, 216, 110), fill='white', width=1)
     d.text((228, 86), 'NEWS', font=font(38, True), fill='white')
-    d.text((425, 98), 'RUS', font=font(23, True), fill='#00ffff')
+    badge = {'uk': 'UKR', 'ru': 'RUS', 'en': 'ENG'}.get(language.split('-')[0], '')
+    d.text((425, 98), badge, font=font(23, True), fill='#00ffff')
     brand_path = folder/'brand.png'; brand.save(brand_path)
     paths = []
     for index, item in enumerate(windows):
@@ -107,8 +108,8 @@ def draw_graphics(folder, windows):
     return brand_path, paths
 
 
-def render_scene(host, windows, seconds, output, working, run, normalize, encode_args, input_args, images):
-    brand, chrome = draw_graphics(working, windows)
+def render_scene(host, windows, seconds, output, working, run, normalize, encode_args, input_args, images, language="uk-UA"):
+    brand, chrome = draw_graphics(working, windows, language)
     args = ['ffmpeg', '-hide_banner', '-loglevel', 'error', '-y', '-filter_complex_threads', '1'] + input_args(host)
     args += ['-loop', '1'] + input_args(brand)
     filters = [f'[0:v]setpts=PTS-STARTPTS,tpad=stop_mode=clone:stop_duration=1,{normalize(1080,1920)}[host]', '[host][1:v]overlay=0:0:format=auto[base]']

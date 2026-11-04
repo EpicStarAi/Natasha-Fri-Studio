@@ -71,7 +71,7 @@ def validate_manifest(pack):
         raise ValueError('Неподдерживаемая версия пакета')
     channel = pack.get('channel', {})
     if channel.get('id') != 'newnews-rus' or channel.get('format') != FORMAT:
-        raise ValueError('Нужен пакет NEW NEWS RUS: 1080×1920, 30 fps, заставка 1 сек., без субтитров')
+        raise ValueError('Нужен пакет NEW🌐NEWS: 1080×1920, 30 fps, заставка 1 сек., без субтитров')
     scenes = pack.get('scenes')
     if not isinstance(scenes, list) or not 1 <= len(scenes) <= 6:
         raise ValueError('Нужно от 1 до 6 тем')
@@ -169,7 +169,7 @@ def _render(manifest, root, output, check_only, log):
                 with log.stage(f'scene.{index}.windows', presenter=str(host), durationSeconds=seconds):
                     for cue in pack['scenes'][index-1]['windows']:
                         log.emit(f'scene.{index}.cue', 'scheduled', **cue)
-                    render_scene(host, windows, seconds, part, scene_work, run, normalize, encode_args, input_args, IMAGES)
+                    render_scene(host, windows, seconds, part, scene_work, run, normalize, encode_args, input_args, IMAGES, pack["channel"].get("language", "uk-UA"))
                 parts.append(part)
                 continue
             args = base + input_args(host)

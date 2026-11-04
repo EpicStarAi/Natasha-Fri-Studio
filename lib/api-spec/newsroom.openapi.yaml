@@ -2,7 +2,7 @@ openapi: 3.1.0
 info:
   title: NewNewsStudio
   version: 1.0.0
-  description: Production packages for NEW🌏NEWS🇷🇺RUS. Schema implementation is in api-zod/src/newsroom.ts.
+  description: Production packages for NEW🌐NEWS. Schema implementation is in api-zod/src/newsroom.ts.
 servers:
   - url: /api
 paths:

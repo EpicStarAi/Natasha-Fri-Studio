@@ -284,7 +284,7 @@ export function NewsWindowPreview({ scene }: { scene: Scene }) {
           <b>NEW</b>
           <span>◎</span>
           <b>NEWS</b>
-          <small>RUS</small>
+          <small>UKR</small>
         </div>
         {active && (
           <div

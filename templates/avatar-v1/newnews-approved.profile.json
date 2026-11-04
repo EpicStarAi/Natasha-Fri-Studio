@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "name": "NEW NEWS RUS — approved V1",
+  "name": "NEW🌐NEWS — Novikova💋Forever",
   "topic": "Новости и контекст",
-  "language": "ru",
+  "language": "uk",
   "voice": {
     "engine": "Supertonic 3",
     "preset": "F1",
@@ -29,5 +29,16 @@
     "fps": 30,
     "introSeconds": 1,
     "subtitles": false
+  },
+  "locale": "uk-UA",
+  "presenter": "Novikova💋Forever",
+  "channel": "NEW🌐NEWS",
+  "pronunciation": {
+    "uk-UA": "lang-uk/ukrainian-word-stress@2.1.0",
+    "ru-RU": "Speech Studio RUAccent",
+    "en-US": "CMUdict (US only)",
+    "en-GB": "UK dictionary + explicit voice accent review",
+    "onAmbiguity": "manual review",
+    "listeningRequired": true
   }
 }

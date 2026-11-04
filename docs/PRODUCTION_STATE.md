@@ -1,7 +1,20 @@
-# NEW🌏NEWS🇷🇺RUS — production continuity
+# NEW🌐NEWS — production continuity
 
 This file records user decisions and observed state. Read it before changing the
 production path. Do not restart tool selection when a working setup is recorded.
+
+## Latest user correction — 2026-11-04 (takes precedence)
+
+- Presenter display name: **Novikova💋Forever**. Channel: **NEW🌐NEWS**.
+- Broadcast language: **Ukrainian**, locale `uk-UA`, Supertonic model code `uk`.
+- Previous Russian clips are historical assets, not Ukrainian versions.
+- Stress routing: UK dictionary for UK, Speech Studio RUAccent for RU,
+  CMUdict for en-US only; en-GB requires a UK reference and accent review.
+- Keep unmarked editorial text separately from pronunciation markup. Log the
+  locale, dictionary/version, ambiguous words and hashes. ASR does not certify stress.
+- See [SPEECH_PRONUNCIATION_RU.md](SPEECH_PRONUNCIATION_RU.md).
+- The technical ID `newnews-rus`, branch/service names remain for compatibility;
+  they no longer determine broadcast language or visible channel identity.
 
 ## Approved result
 
@@ -10,7 +23,7 @@ production path. Do not restart tool selection when a working setup is recorded.
 - Output 1080×1920, 30 fps, no subtitles, one-second intro.
 - Natural coordinated movement of face, shoulders and hands; no frozen mid-air
   gesture, detached moving head or static lower body presented as finished work.
-- Russian speech must finish naturally, without clipped words or endings.
+- Ukrainian speech must finish naturally, without clipped words or endings.
 - Run through the existing local Windows/WSL AI_FACTORY. User explicitly points
   to Huggsfree/Freefield, Wan 2, ComfyUI and DeepFace; inspect existing workflows
   and installations before proposing or installing replacements.

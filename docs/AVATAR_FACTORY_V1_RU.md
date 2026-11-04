@@ -1,5 +1,9 @@
 # AVATAR FACTORY V1 — рабочий шаблон аватаров
 
+> Обновление 04.11.2026: Novikova💋Forever / NEW🌐NEWS говорит на украинском.
+> Перед синтезом обязателен отчёт произношения: [актуальная инструкция](SPEECH_PRONUNCIATION_RU.md).
+> Описание старого русского контрольного ролика ниже — история, а не язык новых выпусков.
+
 Зафиксировано 4 ноября 2026, Europe/Kyiv. Проект: NEW🌏NEWS🇷🇺RUS / AI_FACTORY.
 Этот документ сохраняет **одобренный пользователем ролик с движением ведущей** и превращает его способ производства в повторяемый шаблон. Это рабочая база для новых персонажей и тематик; каждый новый образ проходит свой короткий тест.
 
@@ -235,7 +239,8 @@ mkdir -p /mnt/c/AI_FACTORY/AVATAR_FACTORY/input
   --model-dir /home/buch/newnews-tools/tts-supertonic/models \
   --text-file /mnt/c/AI_FACTORY/AVATAR_FACTORY/input/script.txt \
   --output /mnt/c/AI_FACTORY/AVATAR_FACTORY/input/voice.wav \
-  --voice F1 --language ru --speed 1.0
+  --pronunciation-report /mnt/c/AI_FACTORY/AVATAR_FACTORY/input/pronunciation-review.json \
+  --voice F1 --language uk-UA --speed 1.0
 ```
 
 Сначала прослушать весь WAV: произношение, числа, имена, начало, конец, естественные паузы. В новостях сначала проверяем факты и ссылки, затем озвучиваем. Ударения исправляем текстом и повторным прослушиванием. Не маскируем неудачную дикцию ускорением всего ролика.

@@ -270,7 +270,7 @@ export default function Newsroom() {
           <span>
             NEW
             <span className="nn-brand-line">
-              NEWS<span className="nn-rus">🇷🇺 RUS</span>
+              NEWS<span className="nn-rus">UKR</span>
             </span>
           </span>
         </a>
@@ -305,7 +305,7 @@ export default function Newsroom() {
           <p>
             Мир. Контекст. Главное.
             <br />
-            На русском языке.
+            Українською · Novikova💋Forever
           </p>
           <div className="nn-sidebar-format">
             9:16 <span>FULL HD</span>
@@ -342,13 +342,13 @@ export default function Newsroom() {
         <main className="nn-main">
           <div className="nn-heading">
             <div>
-              <div className="nn-eyebrow">DEEP INSIDE / NEW NEWS RUS</div>
+              <div className="nn-eyebrow">DEEP INSIDE / NEW🌐NEWS</div>
               <h1>
                 {tab === "episode" ? (
                   <>
                     Главное.
                     <br />
-                    <em>По-русски.</em>
+                    <em>Українською.</em>
                   </>
                 ) : tab === "sources" ? (
                   <>
@@ -426,7 +426,7 @@ export default function Newsroom() {
                         })
                       }
                     >
-                      <option value="world">Мировые новости на русском</option>
+                      <option value="world">Світові новини українською</option>
                       <option value="russia-world">Россия и мир</option>
                       <option value="technology">Технологии и AI</option>
                     </select>
@@ -808,7 +808,7 @@ export default function Newsroom() {
             </div>
           )}
           <footer className="nn-footer">
-            <span>NEW🌏NEWS🇷🇺RUS</span>
+            <span>NEW🌐NEWS</span>
             <span>РЕДАКЦИОННАЯ СТУДИЯ · V1</span>
             <span>СОБРАНО С КОНТЕКСТОМ</span>
           </footer>

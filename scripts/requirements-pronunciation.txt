@@ -1,0 +1,4 @@
+# Install the first package with --no-deps to avoid the optional Stanza/PyTorch backend.
+ukrainian-word-stress==2.1.0
+marisa-trie==1.4.1
+cmudict==1.1.3

@@ -96,6 +96,9 @@ test("server owns profile and publication settings even when input tries to over
     "test-id",
   );
   assert.equal(result.channel.id, "newnews-rus");
+  assert.equal(result.channel.name, "NEW🌐NEWS");
+  assert.equal(result.channel.language, "uk-UA");
+  assert.equal(result.production.presenter, "Novikova💋Forever");
   assert.equal(result.channel.format.subtitles, false);
   assert.equal(result.state, "awaiting_media");
   assert.equal(result.publication.automatic, false);
@@ -180,7 +183,7 @@ test("API starts without Postgres and reports configuration, not fake render rea
 test("local single-process server serves the studio and keeps API misses as JSON", async () => {
   const web = await fetch(base.replace(/\/api$/, "/"));
   assert.equal(web.status, 200);
-  assert.match(await web.text(), /NEW🌏NEWS🇷🇺RUS/);
+  assert.match(await web.text(), /NEW🌐NEWS/);
   const missing = await fetch(`${base}/unknown`);
   assert.equal(missing.status, 404);
   assert.match(missing.headers.get("content-type"), /application\/json/);

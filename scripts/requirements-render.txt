@@ -1,0 +1,2 @@
+# Only the timed-window graphics need Pillow; FFmpeg/FFprobe are system tools.
+Pillow>=10,<14

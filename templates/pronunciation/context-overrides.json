@@ -1,0 +1,26 @@
+{
+  "uk-UA": {
+    "виміряти": {
+      "say": "ви́міряти",
+      "verifiedLexically": true,
+      "source": "https://goroh.pp.ua/Словозміна/виміряти — доконаний вид у цьому реченні"
+    },
+    "Діморф": {
+      "say": "Дімо́рф",
+      "verifiedLexically": false,
+      "source": "Editorial pronunciation candidate; Ukrainian dictionary entry not found. Confirm by listening/reference before publication."
+    }
+  },
+  "en-GB": {
+    "Hera": {
+      "ipa": "ˈhɪə.rə",
+      "source": "https://dictionary.cambridge.org/pronunciation/english/hera"
+    }
+  },
+  "en-US": {
+    "Hera": {
+      "ipa": "ˈhɪr.ə",
+      "source": "https://dictionary.cambridge.org/pronunciation/english/hera"
+    }
+  }
+}

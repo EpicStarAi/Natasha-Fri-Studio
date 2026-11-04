@@ -1,0 +1,36 @@
+{
+  "baselineDate": "2026-11-04 Europe/Kyiv",
+  "checkpointBranch": "checkpoint/avatar-motion-v1-approved-2026-11-04",
+  "baselineCommit": "c4965b9c729c2df66c3ad634fedcac1446dce249",
+  "userApproved": "NEW_NEWS_RUS_MOTION_V2_1080x1920.mp4",
+  "validation": {
+    "profileIdentityIsolation": "passed",
+    "wholeAudioTailAfterIntro": "passed",
+    "incompleteMotionRejected": "passed",
+    "existingNewsRendererTests": "6 passed",
+    "localCpuTtsSmoke": "passed on user WSL; Supertonic 3 / F1 / ru",
+    "baselineAssetsAssembly": "passed; no new GPU generation"
+  },
+  "referenceAssets": {
+    "NEW_NEWS_RUS_MOTION_V2_1080x1920.mp4": {
+      "bytes": 5045640,
+      "sha256": "e2173b9d1a6d706bb898440bc1c287e1a61b30d97d243463a54cb99d365bd978"
+    },
+    "presenter-master.png": {
+      "bytes": 183141,
+      "sha256": "c42b5458e4a10e2a5365e157d2b52cfd68068b3de127d72d3f216eb9acfa8601"
+    },
+    "voice.wav": {
+      "bytes": 1216556,
+      "sha256": "3cf6c73f3a18159efcf05b24d6f553fac675a94a7493676575a5f50379db5a4f"
+    },
+    "intro-approved.png": {
+      "bytes": 614115,
+      "sha256": "34665ce637d33fe2acb6016baec3a542c3404160a4bbdf7bc7dabe5514fb42de"
+    },
+    "presenter-motion-complete.mp4": {
+      "bytes": 1698732,
+      "sha256": "e4c10622e0a1eafa78829a50b74de9777689c601c48d7ad97bec0c37413427cb"
+    }
+  }
+}

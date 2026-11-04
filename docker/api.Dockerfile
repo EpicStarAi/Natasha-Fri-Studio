@@ -14,6 +14,7 @@ FROM node:24-bookworm-slim
 WORKDIR /app
 ENV NODE_ENV=production
 COPY --from=build /app/artifacts/api-server/dist ./dist
+RUN mkdir -p /app/data/newnews && chown -R node:node /app/data
 
 USER node
 EXPOSE 5000

@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "id": "hera-windows-20261104",
+  "createdAt": "2026-11-04T00:55:00+02:00",
+  "channel": {
+    "id": "newnews-rus",
+    "name": "NEW🌏NEWS🇷🇺RUS",
+    "language": "ru-RU",
+    "timezone": "Europe/Kyiv",
+    "format": {
+      "width": 1080,
+      "height": 1920,
+      "fps": 30,
+      "introSeconds": 1,
+      "subtitles": false
+    }
+  },
+  "title": "Как сдвинуть астероид: миссия Hera",
+  "focus": "technology",
+  "introAsset": "intro.png",
+  "scenes": [
+    {
+      "id": "hera",
+      "headline": "Как сдвинуть астероид",
+      "narration": "Как сдвинуть астероид? Европейский зонд «Гера» изучит Диморф. Аппарат «Дарт» уже изменил его орбиту. Теперь нужно измерить последствия удара. И заглянуть внутрь астероида. Эти данные помогут точнее планировать защиту Земли.",
+      "sourceUrls": [
+        "https://www.esa.int/Space_Safety/Hera/10_asteroid_mysteries_that_Hera_will_explore"
+      ],
+      "durationSeconds": 20,
+      "presenterAsset": "presenter.mp4",
+      "brollAsset": "",
+      "windows": [
+        {
+          "id": "cue-1",
+          "asset": "hera.png",
+          "startSeconds": 0,
+          "endSeconds": 5.62312925170068,
+          "mediaStartSeconds": 0,
+          "headline": "КАК СДВИНУТЬ АСТЕРОИД",
+          "label": "ВИЗУАЛИЗАЦИЯ",
+          "credit": "© ESA–Science Office",
+          "sourceUrl": "https://www.esa.int/ESA_Multimedia/Images/2024/02/Hera_approaches_Dimorphos",
+          "anchorText": "Как сдвинуть астероид? Европейский зонд «Гера» изучит Диморф."
+        },
+        {
+          "id": "cue-2",
+          "asset": "dart.png",
+          "startSeconds": 5.62312925170068,
+          "endSeconds": 12.360816326530612,
+          "mediaStartSeconds": 0,
+          "headline": "ОРБИТА УЖЕ ИЗМЕНИЛАСЬ",
+          "label": "АРХИВ · DART, 2022",
+          "credit": "NASA / Johns Hopkins APL",
+          "sourceUrl": "https://www.esa.int/ESA_Multimedia/Images/2023/02/Didymos_and_Dimorphos_seen_by_DART",
+          "anchorText": "Аппарат «Дарт» уже изменил его орбиту. Теперь нужно измерить последствия удара."
+        },
+        {
+          "id": "cue-3",
+          "asset": "juventas.png",
+          "startSeconds": 12.360816326530612,
+          "endSeconds": 19.53578231292517,
+          "mediaStartSeconds": 0,
+          "headline": "ЗАГЛЯНУТЬ ВНУТРЬ АСТЕРОИДА",
+          "label": "СХЕМА · ПЛАН МИССИИ",
+          "credit": "© ESA–Science Office",
+          "sourceUrl": "https://www.esa.int/ESA_Multimedia/Images/2026/11/Hera_s_Juventas_CubeSat_performing_radar_probe_inside_the_Dimorphos_asteroid",
+          "anchorText": "И заглянуть внутрь астероида. Эти данные помогут точнее планировать защиту Земли."
+        }
+      ]
+    }
+  ],
+  "publication": {
+    "automatic": false,
+    "destinations": []
+  },
+  "editorial": {
+    "sourcePublished": "2026-11-03",
+    "checkedOn": "2026-11-04 Europe/Kyiv",
+    "source": "https://www.esa.int/Space_Safety/Hera/10_asteroid_mysteries_that_Hera_will_explore",
+    "timingMethod": "Three separately synthesized full sentences/paragraphs, measured PCM sample counts, 120ms inter-segment gap; combined voice is the exact InfiniteTalk input.",
+    "notes": "Hera/Juventas pictures are labelled visualizations and future mission plans. DART image is archival. Original media remains unmodified except scale/letterbox during composition. Source credits visible in each window."
+  }
+}
